@@ -1,12 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../features/auth/pages/LoginPage';
-
-const DevicesPlaceholder = () => (
-  <div className="flex items-center justify-center h-screen text-xl text-gray-500">
-    Устройства — скоро будет
-  </div>
-);
+import DevicesPage from '../features/devices/pages/DevicesPage';
 
 export const router = createBrowserRouter([
   {
@@ -18,7 +13,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <DevicesPlaceholder />,
+        element: <DevicesPage />,
       },
     ],
   },
