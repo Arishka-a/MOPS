@@ -31,13 +31,7 @@ const DevicesPage = () => {
     <div style={{ padding: 36, maxWidth: 1100, margin: '0 auto' }}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[22px] font-extrabold">Устройства</h2>
-        <div className="flex gap-2 items-center">
-          {devices.length > 0 && (
-            <>
-              <StatusBadge text={`${onlineCount} онлайн`} color="green" />
-              <StatusBadge text={`${offlineCount} офлайн`} color="red" />
-            </>
-          )}
+        <div className="flex gap-2 items-center">          
           <button
             onClick={() => navigate('/controllers')}
             className="bg-[#2626E0] text-white border-none rounded-[14px] px-7 py-3 text-[15px] font-bold cursor-pointer ml-3 hover:bg-[#1e1ebf]"
