@@ -5,6 +5,7 @@ import {
   DeviceTypeGroup,
   DeviceReservationStatus,
 } from '../../types/enums';
+import type { UserSchema } from '../auth/types';
 
 export interface DeviceSchema {
   hostname: string;
@@ -21,6 +22,10 @@ export interface DeviceSchema {
   connection_status: DeviceConnectionStatus;
   reservation_status: DeviceReservationStatus;
   type_group: DeviceTypeGroup;
+  reservation?: ReservationSchema | null;
+  image?: ImageSchema | null;
+  output_power?: BolidPinSchema | null;
+  output_boot?: BolidPinSchema | null;
 }
 
 export interface DeviceUpdateRequest {
@@ -47,9 +52,25 @@ export interface DeviceFilters {
 
 export interface ReservationSchema {
   id: string;
-  user: string;
-  role: string;
-  time_start: string;
-  time_end: string;
-  devices: string[];
+  user: UserSchema;
+  time_start: string | null;
+  time_end: string | null;
+  devices_hostnames?: string[] | null;
+}
+
+export interface BolidPinSchema {
+  id: string;
+  number: number;
+  bolid_name: string;
+}
+
+export interface ImageSchema {
+  id: string;
+  image_type: string;
+  image_version: string | null;
+  device_type: DeviceType | null;
+  release_type: string | null;
+  filename: string;
+  filepath: string;
+  was_installed: boolean;
 }

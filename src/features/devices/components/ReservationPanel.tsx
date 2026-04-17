@@ -119,9 +119,11 @@ const ReservationPanel = () => {
             {foundById && (
               <div className="text-[12px] text-[#6B7280] bg-[#F3F4F6] rounded-[10px] p-3 mt-3 space-y-1">
                 <p><span className="font-semibold">ID:</span> {foundById.id}</p>
-                <p><span className="font-semibold">Пользователь:</span> {foundById.user}</p>
-                <p><span className="font-semibold">Устройства:</span> {foundById.devices?.join(', ')}</p>
-                <p><span className="font-semibold">Период:</span> {formatDate(foundById.time_start)} → {formatDate(foundById.time_end)}</p>
+                <p><span className="font-semibold">Пользователь:</span> {foundById.user.username}</p>
+                {foundById.devices_hostnames && foundById.devices_hostnames.length > 0 && (
+                  <p><span className="font-semibold">Устройства:</span> {foundById.devices_hostnames.join(', ')}</p>
+                )}
+                <p><span className="font-semibold">Период:</span> {formatDate(foundById.time_start ?? '')} → {formatDate(foundById.time_end ?? '')}</p>
               </div>
             )}
           </div>
@@ -160,9 +162,11 @@ const ReservationPanel = () => {
             {foundByHostname && (
               <div className="text-[12px] text-[#6B7280] bg-[#F3F4F6] rounded-[10px] p-3 mt-3 space-y-1">
                 <p><span className="font-semibold">ID:</span> {foundByHostname.id}</p>
-                <p><span className="font-semibold">Пользователь:</span> {foundByHostname.user}</p>
-                <p><span className="font-semibold">Устройства:</span> {foundByHostname.devices?.join(', ')}</p>
-                <p><span className="font-semibold">Период:</span> {formatDate(foundByHostname.time_start)} → {formatDate(foundByHostname.time_end)}</p>
+                <p><span className="font-semibold">Пользователь:</span> {foundByHostname.user.username}</p>
+                {foundByHostname.devices_hostnames && foundByHostname.devices_hostnames.length > 0 && (
+                  <p><span className="font-semibold">Устройства:</span> {foundByHostname.devices_hostnames.join(', ')}</p>
+                )}
+                <p><span className="font-semibold">Период:</span> {formatDate(foundByHostname.time_start ?? '')} → {formatDate(foundByHostname.time_end ?? '')}</p>
               </div>
             )}
           </div>

@@ -6,7 +6,6 @@ import { DeviceConnectionStatus } from '../../../types/enums';
 import DeviceFiltersBar from '../components/DeviceFiltersBar';
 import DevicesTable from '../components/DevicesTable';
 import ReservationPanel from '../components/ReservationPanel';
-import StatusBadge from '../components/StatusBadge';
 
 const DevicesPage = () => {
   const navigate = useNavigate();
@@ -21,10 +20,10 @@ const DevicesPage = () => {
   );
 
   const onlineCount = devices.filter(
-    (d) => d.connection_status === DeviceConnectionStatus.ONLINE
+    (d) => d.connection_status === DeviceConnectionStatus.AVAILABLE
   ).length;
   const offlineCount = devices.filter(
-    (d) => d.connection_status === DeviceConnectionStatus.OFFLINE
+    (d) => d.connection_status === DeviceConnectionStatus.UNAVAILABLE
   ).length;
 
   return (
