@@ -20,13 +20,6 @@ const DevicesPage = () => {
     Object.keys(queryFilters).length > 0 ? queryFilters : undefined
   );
 
-  const onlineCount = devices.filter(
-    (d) => d.connection_status === DeviceConnectionStatus.ONLINE
-  ).length;
-  const offlineCount = devices.filter(
-    (d) => d.connection_status === DeviceConnectionStatus.OFFLINE
-  ).length;
-
   return (
     <div style={{ padding: 36, maxWidth: 1100, margin: '0 auto' }}>
       <div className="flex justify-between items-center mb-6">

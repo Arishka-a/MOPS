@@ -45,3 +45,9 @@ export const SshUser = {
   ROOT: 'root',
 } as const;
 export type SshUser = (typeof SshUser)[keyof typeof SshUser];
+
+export const ImageType = {
+  DEV: 'dev',
+  RELEASE: 'release',
+} as const;
+export type ImageType = (typeof ImageType)[keyof typeof ImageType];

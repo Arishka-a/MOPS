@@ -1,39 +1,56 @@
-import {
+import type {
   DeviceType,
   DeviceConnectionStatus,
   DeviceTestStage,
   DeviceTypeGroup,
   DeviceReservationStatus,
+  ImageType,
 } from '../../types/enums';
+import type { UserSchema } from '../auth/types';
+
+export interface BolidPinSchema {
+  id: string;
+  number: number;
+  bolid_name: string;
+}
+
+export interface ImageSchema {
+  id: string;
+  image_type: ImageType;
+  image_version: string | null;
+  device_type: DeviceType | null;
+  release_type: string | null;
+  filename: string;
+  filepath: string;
+  was_installed: boolean;
+}
+
+export interface ReservationSchema {
+  id: string;
+  user: UserSchema;
+  time_start: string | null;
+  time_end: string | null;
+}
 
 export interface DeviceSchema {
   hostname: string;
   type: DeviceType;
   mac: string;
   ip: string;
-  https_port: number;
-  ws_port: number;
-  rs232_port: number;
-  snmp_port: number;
-  update_page_port: number;
+  https_port: number | null;
+  ws_port: number | null;
+  rs232_port: string;
+  snmp_port: number | null;
+  update_page_port: number | null;
+  output_power: BolidPinSchema | null;
+  output_boot: BolidPinSchema | null;
+  reservation_status: DeviceReservationStatus | null;
+  image: ImageSchema | null;
+  reservation: ReservationSchema | null;
+  connection_status: DeviceConnectionStatus | null;
+  test_stage: DeviceTestStage | null;
   deactivated: boolean;
-  test_stage: DeviceTestStage;
-  connection_status: DeviceConnectionStatus;
-  reservation_status: DeviceReservationStatus;
   type_group: DeviceTypeGroup;
-}
-
-export interface DeviceUpdateRequest {
-  type?: DeviceType;
-  mac?: string;
-  ip?: string;
-  https_port?: number;
-  ws_port?: number;
-  rs232_port?: number;
-  snmp_port?: number;
-  update_page_port?: number;
-  deactivated?: boolean;
-  test_stage?: DeviceTestStage;
 }
 
 export interface DeviceFilters {
@@ -45,11 +62,15 @@ export interface DeviceFilters {
   reservation_status?: DeviceReservationStatus;
 }
 
-export interface ReservationSchema {
-  id: string;
-  user: string;
-  role: string;
-  time_start: string;
-  time_end: string;
-  devices: string[];
+export interface DeviceUpdateRequest {
+  type?: DeviceType;
+  mac?: string;
+  ip?: string;
+  https_port?: number | null;
+  ws_port?: number | null;
+  rs232_port?: string;
+  snmp_port?: number | null;
+  update_page_port?: number | null;
+  deactivated?: boolean;
+  test_stage?: DeviceTestStage;
 }

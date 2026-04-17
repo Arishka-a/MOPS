@@ -1,97 +1,103 @@
 import { useNavigate } from 'react-router-dom';
 import type { DeviceSchema } from '../types';
-import { DeviceConnectionStatus, DeviceTestStage, DeviceReservationStatus } from '../../../types/enums';
-import StatusBadge from './StatusBadge';
+import { DeviceConnectionStatus, DeviceReservationStatus } from '../../../types/enums';
+import StatusBadge from '../components/StatusBadge';
 
 interface Props {
   devices: DeviceSchema[];
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
-const connMap: Record<DeviceConnectionStatus, { text: string; color: 'green' | 'red' }> = {
-  [DeviceConnectionStatus.ONLINE]: { text: 'Онлайн', color: 'green' },
-  [DeviceConnectionStatus.OFFLINE]: { text: 'Офлайн', color: 'red' },
-};
-
-const stageMap: Record<DeviceTestStage, { text: string; color: 'green' | 'red' | 'orange' | 'blue' | 'gray' }> = {
-  [DeviceTestStage.TESTING]: { text: 'Тестирование', color: 'blue' },
-  [DeviceTestStage.FIRMWARE]: { text: 'Прошивка', color: 'orange' },
-  [DeviceTestStage.IDLE]: { text: 'Свободно', color: 'gray' },
-};
-
-const reserveMap: Record<DeviceReservationStatus, { text: string; color: 'green' | 'blue' | 'gray' }> = {
-  [DeviceReservationStatus.FREE]: { text: 'Свободно', color: 'gray' },
-  [DeviceReservationStatus.RESERVED]: { text: 'Занято', color: 'blue' },
-};
-
-const DevicesTable = ({ devices, isLoading }: Props) => {
+const DeviceTable = ({ devices, isLoading }: Props) => {
   const navigate = useNavigate();
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16 text-[#6B7280] text-[14px]">
-        Загрузка устройств...
+      <div className="text-center py-12 text-gray-500">
+        Загрузка...
       </div>
     );
   }
 
-  if (!devices.length) {
+  const getConnectionBadge = (status: string | null) => {
+    if (status === DeviceConnectionStatus.ONLINE) {
+      return <StatusBadge text="Доступен" color="green" />;
+    }
+    return <StatusBadge text="Недоступен" color="red" />;
+  };
+
+  const getStageBadge = (stage: string | null) => {
+    if (!stage || stage === 'none') {
+      return <StatusBadge text="Нет" color="gray" />;
+    }
+    const labels: Record<string, string> = {
+      installing_image: 'Прошивка',
+      reloading: 'Перезагрузка',
+      manual_test: 'Тест (ручн.)',
+      auto_test: 'Тест (авто)',
+    };
+    return <StatusBadge text={labels[stage] ?? stage} color="orange" />;
+  };
+
+  const getReservationBadge = (status: string | null) => {
+    if (status === DeviceReservationStatus.RESERVED) {
+      return <StatusBadge text="Занято" color="orange" />;
+    }
+    return <StatusBadge text="Свободно" color="green" />;
+  };
+
+  if (devices.length === 0) {
     return (
-      <div className="flex items-center justify-center py-16 text-[#6B7280] text-[14px]">
+      <div className="text-center py-12 text-gray-500">
         Устройства не найдены
       </div>
     );
   }
 
   return (
-    <div className="overflow-auto rounded-[12px] border border-[#D1D5DB] mb-5">
-      <table className="w-full border-collapse text-[13px]">
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
         <thead>
-          <tr>
-            {['Hostname', 'Тип', 'IP-адрес', 'MAC-адрес', 'Подключение', 'Стадия', 'Активно', 'Бронь'].map((h) => (
-              <th
-                key={h}
-                className="text-left px-[14px] py-[10px] bg-[#F3F4F6] font-bold text-[11px] uppercase tracking-[0.5px] text-[#6B7280] border-b border-[#D1D5DB] whitespace-nowrap"
-              >
-                {h}
-              </th>
-            ))}
+          <tr className="border-b border-gray-200">
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">Hostname</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">Тип</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">IP-адрес</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">MAC-адрес</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">Подключение</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">Стадия</th>
+            <th className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">Бронь</th>
+            <th className="text-right py-3 px-4"></th>
           </tr>
         </thead>
         <tbody>
-          {devices.map((d, idx) => {
-            const conn = connMap[d.connection_status] ?? { text: d.connection_status, color: 'gray' as const };
-            const stage = stageMap[d.test_stage] ?? { text: d.test_stage, color: 'gray' as const };
-            const reserve = reserveMap[d.reservation_status] ?? { text: d.reservation_status, color: 'gray' as const };
-
-            return (
-              <tr key={d.hostname + idx} className="border-b border-[#D1D5DB]/30">
-                <td
-                  className="px-[14px] py-[10px] font-semibold text-[#2626E0] cursor-pointer hover:underline"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                  onClick={() => navigate(`/devices/${d.hostname}`)}
+          {devices.map((device) => (
+            <tr
+              key={device.hostname}
+              className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+            >
+              <td className="py-3 px-4 font-medium text-indigo-600">{device.hostname}</td>
+              <td className="py-3 px-4 text-gray-700">{device.type}</td>
+              <td className="py-3 px-4 text-gray-700">{device.ip}</td>
+              <td className="py-3 px-4 text-gray-700 font-mono text-xs">{device.mac}</td>
+              <td className="py-3 px-4">{getConnectionBadge(device.connection_status)}</td>
+              <td className="py-3 px-4">{getStageBadge(device.test_stage)}</td>
+              <td className="py-3 px-4">{getReservationBadge(device.reservation_status)}</td>
+              <td className="py-3 px-4 text-right">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/devices/${device.hostname}`)}
+                  className="px-3 py-1.5 text-sm font-medium text-indigo-600 border border-indigo-600 rounded-lg
+                             hover:bg-indigo-50 transition-colors"
                 >
-                  {d.hostname}
-                </td>
-                <td className="px-[14px] py-[10px]">{d.type}</td>
-                <td className="px-[14px] py-[10px]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{d.ip}</td>
-                <td className="px-[14px] py-[10px]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{d.mac}</td>
-                <td className="px-[14px] py-[10px]"><StatusBadge text={conn.text} color={conn.color} /></td>
-                <td className="px-[14px] py-[10px]"><StatusBadge text={stage.text} color={stage.color} /></td>
-                <td className="px-[14px] py-[10px]">
-                  <StatusBadge
-                    text={d.deactivated ? 'Нет' : 'Да'}
-                    color={d.deactivated ? 'red' : 'green'}
-                  />
-                </td>
-                <td className="px-[14px] py-[10px]"><StatusBadge text={reserve.text} color={reserve.color} /></td>
-              </tr>
-            );
-          })}
+                  Подробнее
+                </button>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
   );
 };
 
-export default DevicesTable;
+export default DeviceTable;
