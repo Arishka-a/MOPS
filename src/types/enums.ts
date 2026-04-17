@@ -1,10 +1,11 @@
 export const DeviceType = {
-  STB_A: 'stb_a',
-  STB_C: 'stb_c',
-  ONT_A: 'ont_a',
-  ONT_B: 'ont_b',
-  CPE_A: 'cpe_a',
-  CPE_B: 'cpe_b',
+  TEDIX_V1_02: 'tedix-v1-02',
+  TEDIX_V2_02: 'tedix-v2-02',
+  TEDIX_V2_LTE_02: 'tedix-v2-lte-02',
+  TEDIX_R1_02: 'tedix-r1-02',
+  TEDIX_R2D1_02: 'tedix-r2d1-02',
+  TEDIX_R2D1_RTK_02: 'tedix-r2d1-rtk-02',
+  TEDIX_R2D2_RTK_02: 'tedix-r2d2-rtk-02',
 } as const;
 export type DeviceType = (typeof DeviceType)[keyof typeof DeviceType];
 
@@ -22,9 +23,8 @@ export const DeviceTestStage = {
 export type DeviceTestStage = (typeof DeviceTestStage)[keyof typeof DeviceTestStage];
 
 export const DeviceTypeGroup = {
-  STB: 'stb',
-  ONT: 'ont',
-  CPE: 'cpe',
+  OBU: 'obu',
+  RSU: 'rsu',
 } as const;
 export type DeviceTypeGroup = (typeof DeviceTypeGroup)[keyof typeof DeviceTypeGroup];
 

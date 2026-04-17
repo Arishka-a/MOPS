@@ -21,9 +21,9 @@ const DeviceTable = ({ devices, isLoading }: Props) => {
 
   const getConnectionBadge = (status: string | null) => {
     if (status === DeviceConnectionStatus.ONLINE) {
-      return <StatusBadge text="Доступен" color="green" />;
+      return <StatusBadge text="Онлайн" color="green" />;
     }
-    return <StatusBadge text="Недоступен" color="red" />;
+    return <StatusBadge text="Офлайн" color="red" />;
   };
 
   const getStageBadge = (stage: string | null) => {

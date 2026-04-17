@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetDevicesQuery } from '../api';
 import type { DeviceFilters } from '../types';
-import { DeviceConnectionStatus } from '../../../types/enums';
 import DeviceFiltersBar from '../components/DeviceFiltersBar';
 import DevicesTable from '../components/DevicesTable';
 import ReservationPanel from '../components/ReservationPanel';
-import StatusBadge from '../components/StatusBadge';
 
 const DevicesPage = () => {
   const navigate = useNavigate();
@@ -25,12 +23,6 @@ const DevicesPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[22px] font-extrabold">Устройства</h2>
         <div className="flex gap-2 items-center">
-          {devices.length > 0 && (
-            <>
-              <StatusBadge text={`${onlineCount} онлайн`} color="green" />
-              <StatusBadge text={`${offlineCount} офлайн`} color="red" />
-            </>
-          )}
           <button
             onClick={() => navigate('/controllers')}
             className="bg-[#2626E0] text-white border-none rounded-[14px] px-7 py-3 text-[15px] font-bold cursor-pointer ml-3 hover:bg-[#1e1ebf]"

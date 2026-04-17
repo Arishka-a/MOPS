@@ -168,7 +168,7 @@ const ReservationPanel = () => {
           </div>
         </div>
 
-        <div className="flex-1 min-w-[300px]">
+        {/*<div className="flex-1 min-w-[300px]">
           <div className="rounded-[20px] border-[3px] border-[#2626E0] bg-white p-7 h-full flex flex-col items-center justify-center text-center">
             <div className="text-[16px] font-bold mb-1">Очистка бронирований</div>
             <div className="text-[14px] text-[#6B7280] mb-5">Время автоматической очистки</div>
@@ -186,7 +186,7 @@ const ReservationPanel = () => {
               Запустить
             </button>
           </div>
-        </div>
+        </div>*/}
       </div>
     </div>
   );
