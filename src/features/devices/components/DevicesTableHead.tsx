@@ -15,6 +15,7 @@ const DevicesTableHead = () => {
             {h}
           </th>
         ))}
+        <th className="bg-[#F3F4F6] border-b border-[#D1D5DB]"></th>
       </tr>
     </thead>
   );

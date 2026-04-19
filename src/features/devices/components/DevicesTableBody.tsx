@@ -74,6 +74,15 @@ const DevicesTableBody = ({ devices }: Props) => {
               />
             </td>
             <td className="px-[14px] py-[10px]"><ReservationBadge device={d} /></td>
+            <td className="px-[14px] py-[10px] text-right">
+              <button
+                type="button"
+                onClick={() => navigate(`/devices/${d.hostname}`)}
+                className="border border-[#2626E0] text-[#2626E0] rounded-[10px] px-4 py-[6px] text-[12px] font-bold cursor-pointer hover:bg-[#EAEBFF] transition-colors"
+              >
+                Подробнее
+              </button>
+            </td>
           </tr>
         );
       })}

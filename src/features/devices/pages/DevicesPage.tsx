@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGetDevicesQuery } from '../api';
 import type { DeviceFilters } from '../types';
-import { DeviceConnectionStatus } from '../../../types/enums';
 import DeviceFiltersBar from '../components/DeviceFiltersBar';
 import DevicesTable from '../components/DevicesTable';
 import ReservationPanel from '../components/ReservationPanel';
@@ -19,15 +18,8 @@ const DevicesPage = () => {
     Object.keys(queryFilters).length > 0 ? queryFilters : undefined
   );
 
-  const onlineCount = devices.filter(
-    (d) => d.connection_status === DeviceConnectionStatus.AVAILABLE
-  ).length;
-  const offlineCount = devices.filter(
-    (d) => d.connection_status === DeviceConnectionStatus.UNAVAILABLE
-  ).length;
-
   return (
-    <div style={{ padding: 36, maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: '36px 120px', margin: '0 auto' }}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[22px] font-extrabold">Устройства</h2>
         <div className="flex gap-2 items-center">          
