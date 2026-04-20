@@ -119,9 +119,11 @@ const ReservationPanel = () => {
             {foundById && (
               <div className="text-[12px] text-[#6B7280] bg-[#F3F4F6] rounded-[10px] p-3 mt-3 space-y-1">
                 <p><span className="font-semibold">ID:</span> {foundById.id}</p>
-                <p><span className="font-semibold">Пользователь:</span> {foundById.user}</p>
-                <p><span className="font-semibold">Устройства:</span> {foundById.devices?.join(', ')}</p>
-                <p><span className="font-semibold">Период:</span> {formatDate(foundById.time_start)} → {formatDate(foundById.time_end)}</p>
+                <p><span className="font-semibold">Пользователь:</span> {foundById.user.username}</p>
+                {foundById.devices_hostnames && foundById.devices_hostnames.length > 0 && (
+                  <p><span className="font-semibold">Устройства:</span> {foundById.devices_hostnames.join(', ')}</p>
+                )}
+                <p><span className="font-semibold">Период:</span> {formatDate(foundById.time_start ?? '')} → {formatDate(foundById.time_end ?? '')}</p>
               </div>
             )}
           </div>
@@ -160,15 +162,17 @@ const ReservationPanel = () => {
             {foundByHostname && (
               <div className="text-[12px] text-[#6B7280] bg-[#F3F4F6] rounded-[10px] p-3 mt-3 space-y-1">
                 <p><span className="font-semibold">ID:</span> {foundByHostname.id}</p>
-                <p><span className="font-semibold">Пользователь:</span> {foundByHostname.user}</p>
-                <p><span className="font-semibold">Устройства:</span> {foundByHostname.devices?.join(', ')}</p>
-                <p><span className="font-semibold">Период:</span> {formatDate(foundByHostname.time_start)} → {formatDate(foundByHostname.time_end)}</p>
+                <p><span className="font-semibold">Пользователь:</span> {foundByHostname.user.username}</p>
+                {foundByHostname.devices_hostnames && foundByHostname.devices_hostnames.length > 0 && (
+                  <p><span className="font-semibold">Устройства:</span> {foundByHostname.devices_hostnames.join(', ')}</p>
+                )}
+                <p><span className="font-semibold">Период:</span> {formatDate(foundByHostname.time_start ?? '')} → {formatDate(foundByHostname.time_end ?? '')}</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="flex-1 min-w-[300px]">
+        {/*<div className="flex-1 min-w-[300px]">
           <div className="rounded-[20px] border-[3px] border-[#2626E0] bg-white p-7 h-full flex flex-col items-center justify-center text-center">
             <div className="text-[16px] font-bold mb-1">Очистка бронирований</div>
             <div className="text-[14px] text-[#6B7280] mb-5">Время автоматической очистки</div>
@@ -186,7 +190,7 @@ const ReservationPanel = () => {
               Запустить
             </button>
           </div>
-        </div>
+        </div>*/}
       </div>
     </div>
   );

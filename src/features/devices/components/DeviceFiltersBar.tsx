@@ -52,8 +52,8 @@ const DeviceFiltersBar = ({ filters, onChange }: Props) => {
             className="border border-[#D1D5DB] rounded-[10px] px-3 py-[9px] text-[14px] bg-white outline-none w-full"
           >
             <option value="">Все</option>
-            <option value={DeviceConnectionStatus.ONLINE}>Онлайн</option>
-            <option value={DeviceConnectionStatus.OFFLINE}>Офлайн</option>
+            <option value={DeviceConnectionStatus.AVAILABLE}>Онлайн</option>
+            <option value={DeviceConnectionStatus.UNAVAILABLE}>Офлайн</option>
           </select>
         </div>
 
@@ -71,9 +71,11 @@ const DeviceFiltersBar = ({ filters, onChange }: Props) => {
             className="border border-[#D1D5DB] rounded-[10px] px-3 py-[9px] text-[14px] bg-white outline-none w-full"
           >
             <option value="">Все</option>
-            <option value={DeviceTestStage.TESTING}>Тестирование</option>
-            <option value={DeviceTestStage.FIRMWARE}>Прошивка</option>
-            <option value={DeviceTestStage.IDLE}>Свободно</option>
+            <option value={DeviceTestStage.AUTO_TEST}>Авто тест</option>
+            <option value={DeviceTestStage.MANUAL_TEST}>Ручной тест</option>
+            <option value={DeviceTestStage.INSTALLING_IMAGE}>Прошивка</option>
+            <option value={DeviceTestStage.RELOADING}>Перезагрузка</option>
+            <option value={DeviceTestStage.NONE}>Свободно</option>
           </select>
         </div>
 
@@ -111,7 +113,7 @@ const DeviceFiltersBar = ({ filters, onChange }: Props) => {
             className="border border-[#D1D5DB] rounded-[10px] px-3 py-[9px] text-[14px] bg-white outline-none w-full"
           >
             <option value="">Все</option>
-            <option value={DeviceReservationStatus.FREE}>Свободно</option>
+            <option value={DeviceReservationStatus.AVAILABLE}>Свободно</option>
             <option value={DeviceReservationStatus.RESERVED}>Забронировано</option>
           </select>
         </div>
