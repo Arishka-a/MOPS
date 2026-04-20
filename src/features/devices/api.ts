@@ -4,6 +4,8 @@ import type {
   DeviceUpdateRequest,
   DeviceFilters,
   ReservationSchema,
+  CreateReservationRequest,
+  ReloadDeviceRequest,
 } from './types';
 
 export const devicesApi = api.injectEndpoints({
@@ -62,6 +64,32 @@ export const devicesApi = api.injectEndpoints({
       query: (hostname) => ({ url: `/device_reserve/by_hostname?hostname=${hostname}`, method: 'DELETE' }),
       invalidatesTags: ['Reservations', 'Devices'],
     }),
+
+    createReservation: builder.mutation<ReservationSchema, CreateReservationRequest>({
+      query: (data) => ({
+        url: '/device_reserve',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Reservations', 'Devices'],
+    }),
+
+    reloadDevice: builder.mutation<{ task_id: string }, ReloadDeviceRequest>({
+      query: (data) => ({
+        url: '/install/reload',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    controlBolidPin: builder.mutation<void, { hostname: string; state: number; bolid_name: string }>({
+      query: (data) => ({
+        url: '/bolid_pins/control',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Devices'],
+    }),
   }),
 });
 
@@ -76,4 +104,7 @@ export const {
   useLazyGetReservationByHostnameQuery,
   useDeleteReservationByIdMutation,
   useDeleteReservationByHostnameMutation,
+  useCreateReservationMutation,
+  useReloadDeviceMutation,
+  useControlBolidPinMutation,
 } = devicesApi;

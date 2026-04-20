@@ -74,3 +74,19 @@ export interface ImageSchema {
   filepath: string;
   was_installed: boolean;
 }
+
+export interface CreateReservationRequest {
+  time_start?: string;
+  time_end?: string;
+  by_hostname?: string[];
+  by_type?: Record<string, number>;
+  by_type_group?: Record<string, number>;
+  any?: number;
+}
+
+export interface ReloadDeviceRequest {
+  hostname: string;
+  ssh_username: string;
+  retries: number;
+  retry_delay: number;
+}
