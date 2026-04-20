@@ -4,21 +4,21 @@ import DevicesTableBody from './DevicesTableBody';
 
 interface Props {
   devices: DeviceSchema[];
-  isLoading: boolean;
+  isLoading?: boolean;
 }
 
 const DevicesTable = ({ devices, isLoading }: Props) => {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16 text-[#6B7280] text-[14px]">
-        Загрузка устройств...
+      <div className="text-center py-12 text-gray-500">
+        Загрузка...
       </div>
     );
   }
 
-  if (!devices.length) {
+  if (devices.length === 0) {
     return (
-      <div className="flex items-center justify-center py-16 text-[#6B7280] text-[14px]">
+      <div className="text-center py-12 text-gray-500">
         Устройства не найдены
       </div>
     );

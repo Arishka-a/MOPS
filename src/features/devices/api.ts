@@ -42,7 +42,7 @@ export const devicesApi = api.injectEndpoints({
 
     getReservations: builder.query<ReservationSchema[], void>({
       query: () => '/device_reserve',
-      providesTags: ['Reservation'],
+      providesTags: ['Reservations'],
     }),
 
     getReservationById: builder.query<ReservationSchema, string>({
@@ -55,12 +55,12 @@ export const devicesApi = api.injectEndpoints({
 
     deleteReservationById: builder.mutation<void, string>({
       query: (id) => ({ url: `/device_reserve/by_id?id=${id}`, method: 'DELETE' }),
-      invalidatesTags: ['Reservation', 'Devices'],
+      invalidatesTags: ['Reservations', 'Devices'],
     }),
 
     deleteReservationByHostname: builder.mutation<void, string>({
       query: (hostname) => ({ url: `/device_reserve/by_hostname?hostname=${hostname}`, method: 'DELETE' }),
-      invalidatesTags: ['Reservation', 'Devices'],
+      invalidatesTags: ['Reservations', 'Devices'],
     }),
   }),
 });
