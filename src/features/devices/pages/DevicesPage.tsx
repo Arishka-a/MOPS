@@ -19,10 +19,10 @@ const DevicesPage = () => {
   );
 
   return (
-    <div style={{ padding: 36, maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: '36px 120px', margin: '0 auto' }}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-[22px] font-extrabold">Устройства</h2>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center">          
           <button
             onClick={() => navigate('/controllers')}
             className="bg-[#2626E0] text-white border-none rounded-[14px] px-7 py-3 text-[15px] font-bold cursor-pointer ml-3 hover:bg-[#1e1ebf]"

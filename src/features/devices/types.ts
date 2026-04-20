@@ -51,6 +51,10 @@ export interface DeviceSchema {
   test_stage: DeviceTestStage | null;
   deactivated: boolean;
   type_group: DeviceTypeGroup;
+  reservation?: ReservationSchema | null;
+  image?: ImageSchema | null;
+  output_power?: BolidPinSchema | null;
+  output_boot?: BolidPinSchema | null;
 }
 
 export interface DeviceFilters {

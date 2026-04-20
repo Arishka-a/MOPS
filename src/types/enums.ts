@@ -10,15 +10,17 @@ export const DeviceType = {
 export type DeviceType = (typeof DeviceType)[keyof typeof DeviceType];
 
 export const DeviceConnectionStatus = {
-  ONLINE: 'online',
-  OFFLINE: 'offline',
+  AVAILABLE: 'available',
+  UNAVAILABLE: 'unavailable',
 } as const;
 export type DeviceConnectionStatus = (typeof DeviceConnectionStatus)[keyof typeof DeviceConnectionStatus];
 
 export const DeviceTestStage = {
-  TESTING: 'testing',
-  FIRMWARE: 'firmware',
-  IDLE: 'idle',
+  NONE: 'none',
+  INSTALLING_IMAGE: 'installing_image',
+  RELOADING: 'reloading',
+  MANUAL_TEST: 'manual_test',
+  AUTO_TEST: 'auto_test',
 } as const;
 export type DeviceTestStage = (typeof DeviceTestStage)[keyof typeof DeviceTestStage];
 
@@ -29,7 +31,7 @@ export const DeviceTypeGroup = {
 export type DeviceTypeGroup = (typeof DeviceTypeGroup)[keyof typeof DeviceTypeGroup];
 
 export const DeviceReservationStatus = {
-  FREE: 'free',
+  AVAILABLE: 'available',
   RESERVED: 'reserved',
 } as const;
 export type DeviceReservationStatus = (typeof DeviceReservationStatus)[keyof typeof DeviceReservationStatus];

@@ -25,8 +25,8 @@ const DevicesTable = ({ devices, isLoading }: Props) => {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="overflow-auto rounded-[12px] border border-[#D1D5DB] mb-5">
+      <table className="w-full border-collapse text-[13px]">
         <DevicesTableHead />
         <DevicesTableBody devices={devices} />
       </table>

@@ -1,18 +1,21 @@
 const DevicesTableHead = () => {
   const headers = [
     'Hostname', 'Тип', 'IP-адрес', 'MAC-адрес',
-    'Подключение', 'Стадия', 'Бронь',
+    'Подключение', 'Стадия', 'Активно', 'Бронь',
   ];
 
   return (
     <thead>
-      <tr className="border-b border-gray-200">
+      <tr>
         {headers.map((h) => (
-          <th key={h} className="text-left py-3 px-4 font-medium text-gray-500 uppercase text-xs">
+          <th
+            key={h}
+            className="text-left px-[14px] py-[10px] bg-[#F3F4F6] font-bold text-[11px] uppercase tracking-[0.5px] text-[#6B7280] border-b border-[#D1D5DB] whitespace-nowrap"
+          >
             {h}
           </th>
         ))}
-        <th className="text-right py-3 px-4"></th>
+        <th className="bg-[#F3F4F6] border-b border-[#D1D5DB]"></th>
       </tr>
     </thead>
   );
