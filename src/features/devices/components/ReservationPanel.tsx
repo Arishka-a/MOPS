@@ -6,6 +6,7 @@ import {
   useDeleteReservationByHostnameMutation,
 } from '../api';
 import type { ReservationSchema } from '../types';
+import { formatDateTime } from '../../../utils/formatDate';
 
 const ReservationPanel = () => {
   const [searchId, setSearchId] = useState('');
@@ -69,16 +70,6 @@ const ReservationPanel = () => {
     }
   };
 
-  const formatDate = (iso: string) => {
-    try {
-      return new Date(iso).toLocaleString('ru-RU', {
-        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
-      });
-    } catch {
-      return iso;
-    }
-  };
-
   return (
     <div className="mt-5">
       <h2 className="text-[22px] font-extrabold mb-5">Бронь</h2>
@@ -123,7 +114,7 @@ const ReservationPanel = () => {
                 {foundById.devices_hostnames && foundById.devices_hostnames.length > 0 && (
                   <p><span className="font-semibold">Устройства:</span> {foundById.devices_hostnames.join(', ')}</p>
                 )}
-                <p><span className="font-semibold">Период:</span> {formatDate(foundById.time_start ?? '')} → {formatDate(foundById.time_end ?? '')}</p>
+                <p><span className="font-semibold">Период:</span> {formatDateTime(foundById.time_start ?? '')} → {formatDateTime(foundById.time_end ?? '')}</p>
               </div>
             )}
           </div>
@@ -166,7 +157,7 @@ const ReservationPanel = () => {
                 {foundByHostname.devices_hostnames && foundByHostname.devices_hostnames.length > 0 && (
                   <p><span className="font-semibold">Устройства:</span> {foundByHostname.devices_hostnames.join(', ')}</p>
                 )}
-                <p><span className="font-semibold">Период:</span> {formatDate(foundByHostname.time_start ?? '')} → {formatDate(foundByHostname.time_end ?? '')}</p>
+                <p><span className="font-semibold">Период:</span> {formatDateTime(foundByHostname.time_start ?? '')} → {formatDateTime(foundByHostname.time_end ?? '')}</p>
               </div>
             )}
           </div>
