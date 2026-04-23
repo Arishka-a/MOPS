@@ -17,7 +17,7 @@ const ReservationPanel = () => {
   const [foundByHostname, setFoundByHostname] = useState<ReservationSchema | null>(null);
   const [hostnameError, setHostnameError] = useState('');
 
-  const [cleanupTime, setCleanupTime] = useState('11:55');
+  //const [cleanupTime, setCleanupTime] = useState('11:55');
 
   const [triggerGetById] = useLazyGetReservationByIdQuery();
   const [triggerGetByHostname] = useLazyGetReservationByHostnameQuery();

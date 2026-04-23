@@ -90,3 +90,18 @@ export interface ReloadDeviceRequest {
   retries: number;
   retry_delay: number;
 }
+
+export interface LoadFromShareRequest {
+  device_hostname: string;
+  release_type: string;
+  version: string;
+  image_type?: string;
+  comparator?: string;
+}
+
+export interface InstallTaskStatus {
+  task_id: string;
+  status: string;
+  progress?: string;
+  log?: string;
+}

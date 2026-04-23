@@ -6,6 +6,9 @@ import type {
   ReservationSchema,
   CreateReservationRequest,
   ReloadDeviceRequest,
+  ImageSchema,
+  LoadFromShareRequest,
+  InstallTaskStatus,
 } from './types';
 
 export const devicesApi = api.injectEndpoints({
@@ -90,6 +93,56 @@ export const devicesApi = api.injectEndpoints({
       }),
       invalidatesTags: ['Devices'],
     }),
+
+    getImageByDevice: builder.query<ImageSchema, string>({
+      query: (hostname) => `/image/by_device?device_hostname=${hostname}`,
+      providesTags: (_r, _e, hostname) => [{ type: 'Images', id: hostname }],
+    }),
+
+    loadImageFromShare: builder.mutation<ImageSchema, LoadFromShareRequest>({
+      query: (data) => ({
+        url: '/image/load_from_share',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: (_r, _e, { device_hostname }) => [{ type: 'Images', id: device_hostname }],
+    }),
+
+    uploadImageFile: builder.mutation<ImageSchema, { formData: FormData; hostname: string }>({
+      query: ({ formData }) => ({
+        url: '/image/upload_file',
+        method: 'POST',
+        body: formData,
+      }),
+      invalidatesTags: (_r, _e, { hostname }) => [{ type: 'Images', id: hostname }],
+    }),
+
+    deleteImageByHostname: builder.mutation<void, string>({
+      query: (hostname) => ({
+        url: `/image/by_hostname?device_hostname=${hostname}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, hostname) => [{ type: 'Images', id: hostname }],
+    }),
+
+    installImage: builder.mutation<{ task_id: string }, string>({
+      query: (hostname) => ({
+        url: '/install/install',
+        method: 'POST',
+        body: { hostname },
+      }),
+    }),
+
+    getInstallStatus: builder.query<InstallTaskStatus, string>({
+      query: (taskId) => `/install/install/queue/${taskId}`,
+    }),
+
+    cancelInstall: builder.mutation<void, string>({
+      query: (taskId) => ({
+        url: `/install/install/queue/${taskId}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
 
@@ -107,4 +160,11 @@ export const {
   useCreateReservationMutation,
   useReloadDeviceMutation,
   useControlBolidPinMutation,
+  useGetImageByDeviceQuery,
+  useLoadImageFromShareMutation,
+  useUploadImageFileMutation,
+  useDeleteImageByHostnameMutation,
+  useInstallImageMutation,
+  useLazyGetInstallStatusQuery,
+  useCancelInstallMutation,
 } = devicesApi;

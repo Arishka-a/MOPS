@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCreateReservationMutation } from '../api';
+import { useCreateReservationMutation } from '../../api';
 
 interface Props {
   hostname: string;
