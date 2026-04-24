@@ -78,19 +78,36 @@ export const devicesApi = api.injectEndpoints({
     }),
 
     reloadDevice: builder.mutation<{ task_id: string }, ReloadDeviceRequest>({
-      query: (data) => ({
-        url: '/install/reload',
-        method: 'POST',
-        body: data,
-      }),
+      query: (data) => {
+        const params = new URLSearchParams();
+        params.set('hostname', data.hostname);
+        params.set('ssh_username', data.ssh_username);
+        params.set('retries', String(data.retries));
+        params.set('retry_delay', String(data.retry_delay));
+        return {
+          url: '/install/reload',
+          method: 'POST',
+          body: params,
+        };
+      },
+    }),
+
+    getReloadStatus: builder.query<InstallTaskStatus, string>({
+      query: (taskId) => `/install/reload/queue/${taskId}`,
     }),
 
     controlBolidPin: builder.mutation<void, { hostname: string; state: number; bolid_name: string }>({
-      query: (data) => ({
-        url: '/bolid_pins/control',
-        method: 'POST',
-        body: data,
-      }),
+      query: (data) => {
+        const params = new URLSearchParams();
+        params.set('hostname', data.hostname);
+        params.set('state', String(data.state));
+        params.set('bolid_name', data.bolid_name);
+        return {
+          url: '/bolid_pins/control',
+          method: 'POST',
+          body: params,
+        };
+      },
       invalidatesTags: ['Devices'],
     }),
 
@@ -100,12 +117,19 @@ export const devicesApi = api.injectEndpoints({
     }),
 
     loadImageFromShare: builder.mutation<ImageSchema, LoadFromShareRequest>({
-      query: (data) => ({
-        url: '/image/load_from_share',
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: (_r, _e, { device_hostname }) => [{ type: 'Images', id: device_hostname }],
+      query: (data) => {
+        const params = new URLSearchParams();
+        params.set('device_hostname', data.device_hostname);
+        params.set('release_type', data.release_type);
+        params.set('version', data.version);
+        if (data.image_type) params.set('image_type', data.image_type);
+        if (data.comparator) params.set('comparator', data.comparator);
+        return {
+          url: '/image/load_from_share',
+          method: 'POST',
+          body: params,
+        };
+      },
     }),
 
     uploadImageFile: builder.mutation<ImageSchema, { formData: FormData; hostname: string }>({
@@ -126,11 +150,15 @@ export const devicesApi = api.injectEndpoints({
     }),
 
     installImage: builder.mutation<{ task_id: string }, string>({
-      query: (hostname) => ({
-        url: '/install/install',
-        method: 'POST',
-        body: { hostname },
-      }),
+      query: (hostname) => {
+        const params = new URLSearchParams();
+        params.set('hostname', hostname);
+        return {
+          url: '/install/install',
+          method: 'POST',
+          body: params,
+        };
+      },
     }),
 
     getInstallStatus: builder.query<InstallTaskStatus, string>({
@@ -159,6 +187,7 @@ export const {
   useDeleteReservationByHostnameMutation,
   useCreateReservationMutation,
   useReloadDeviceMutation,
+  useLazyGetReloadStatusQuery,
   useControlBolidPinMutation,
   useGetImageByDeviceQuery,
   useLoadImageFromShareMutation,
