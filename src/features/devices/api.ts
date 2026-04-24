@@ -1,4 +1,5 @@
 import { api } from '../../app/api';
+
 import type {
   DeviceSchema,
   DeviceUpdateRequest,
@@ -10,6 +11,12 @@ import type {
   LoadFromShareRequest,
   InstallTaskStatus,
 } from './types';
+
+import {
+  optimisticCreateReservation,
+  optimisticDeleteReservationByHostname,
+  optimisticDeleteReservationById,
+} from './reservationOptimistic';
 
 export const devicesApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -60,12 +67,20 @@ export const devicesApi = api.injectEndpoints({
 
     deleteReservationById: builder.mutation<void, string>({
       query: (id) => ({ url: `/device_reserve/by_id?id=${id}`, method: 'DELETE' }),
-      invalidatesTags: ['Reservations', 'Devices'],
+      onQueryStarted: (id, api) =>
+        optimisticDeleteReservationById(id, api, devicesApi.util),
+      invalidatesTags: ['Reservations', 'Devices', 'Device'],
     }),
 
     deleteReservationByHostname: builder.mutation<void, string>({
       query: (hostname) => ({ url: `/device_reserve/by_hostname?hostname=${hostname}`, method: 'DELETE' }),
-      invalidatesTags: ['Reservations', 'Devices'],
+      onQueryStarted: (hostname, api) =>
+        optimisticDeleteReservationByHostname(hostname, api, devicesApi.util),
+      invalidatesTags: (_result, _error, hostname) => [
+        'Reservations',
+        'Devices',
+        { type: 'Device', id: hostname },
+      ],
     }),
 
     createReservation: builder.mutation<ReservationSchema, CreateReservationRequest>({
@@ -74,7 +89,12 @@ export const devicesApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['Reservations', 'Devices'],
+      onQueryStarted: (arg, api) =>
+        optimisticCreateReservation(arg, api, devicesApi.util),
+      invalidatesTags: (_result, _error, arg) => {
+        const deviceTags = (arg.by_hostname ?? []).map((h) => ({ type: 'Device' as const, id: h }));
+        return ['Reservations', 'Devices', ...deviceTags];
+      },
     }),
 
     reloadDevice: builder.mutation<{ task_id: string }, ReloadDeviceRequest>({
