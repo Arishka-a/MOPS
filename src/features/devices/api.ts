@@ -1,5 +1,4 @@
 import { api } from '../../app/api';
-
 import type {
   DeviceSchema,
   DeviceUpdateRequest,
@@ -11,12 +10,67 @@ import type {
   LoadFromShareRequest,
   InstallTaskStatus,
 } from './types';
-
 import {
   optimisticCreateReservation,
   optimisticDeleteReservationByHostname,
   optimisticDeleteReservationById,
 } from './reservationOptimistic';
+
+type RawLogMessage = {
+  message_id?: string;
+  message_from?: string;
+  message_type?: string;
+  message_body?: string;
+};
+
+type RawTaskStatus = {
+  id?: string;
+  task_id?: string;
+  status?: string;
+  traceback?: string | null;
+  info?: unknown;
+  result?: {
+    execution_time_s?: number;
+    installation_log?: RawLogMessage[];
+    traceback?: string | null;
+  } | null;
+};
+
+const mapCeleryStatus = (s: string | undefined): string => {
+  if (!s) return '';
+  const upper = s.toUpperCase();
+  if (upper === 'SUCCESS') return 'completed';
+  if (upper === 'FAILURE') return 'failed';
+  if (upper === 'REVOKED') return 'cancelled';
+  return upper.toLowerCase();
+};
+
+const formatLogMessages = (messages: RawLogMessage[] | undefined): string => {
+  if (!messages || messages.length === 0) return '';
+  return messages
+    .map((m) => {
+      const from = m.message_from ?? '?';
+      const type = m.message_type ?? '?';
+      const body = m.message_body ?? '';
+      return `[${from}/${type}] ${body}`;
+    })
+    .join('\n');
+};
+
+const transformTaskStatus = (raw: RawTaskStatus): InstallTaskStatus => {
+  const taskId = raw.task_id ?? raw.id ?? '';
+  const status = mapCeleryStatus(raw.status);
+  const log = formatLogMessages(raw.result?.installation_log);
+  const traceback = raw.result?.traceback ?? raw.traceback;
+  const fullLog = traceback
+    ? (log ? `${log}\n[TRACEBACK]\n${traceback}` : `[TRACEBACK]\n${traceback}`)
+    : log;
+  return {
+    task_id: taskId,
+    status,
+    log: fullLog,
+  };
+};
 
 export const devicesApi = api.injectEndpoints({
   endpoints: (builder) => ({
@@ -110,10 +164,14 @@ export const devicesApi = api.injectEndpoints({
           body: params,
         };
       },
+      transformResponse: (response: { id?: string; task_id?: string }) => ({
+        task_id: response.task_id ?? response.id ?? '',
+      }),
     }),
 
     getReloadStatus: builder.query<InstallTaskStatus, string>({
       query: (taskId) => `/install/reload/queue/${taskId}`,
+      transformResponse: transformTaskStatus,
     }),
 
     controlBolidPin: builder.mutation<void, { hostname: string; state: number; bolid_name: string }>({
@@ -179,10 +237,14 @@ export const devicesApi = api.injectEndpoints({
           body: params,
         };
       },
+      transformResponse: (response: { id?: string; task_id?: string }) => ({
+        task_id: response.task_id ?? response.id ?? '',
+      }),
     }),
 
     getInstallStatus: builder.query<InstallTaskStatus, string>({
       query: (taskId) => `/install/install/queue/${taskId}`,
+      transformResponse: transformTaskStatus,
     }),
 
     cancelInstall: builder.mutation<void, string>({

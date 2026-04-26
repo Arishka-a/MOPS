@@ -1,6 +1,8 @@
-import { useGetImageByDeviceQuery } from '../../api';
+import { useGetDeviceQuery, useGetImageByDeviceQuery } from '../../api';
 import { useInstallPolling } from '../../hooks/useInstallPolling';
+import type { DeviceSchema, ImageSchema } from '../../types';
 import CurrentImageInfo from './CurrentImageInfo';
+import ImageStatusBadge from './ImageStatusBadge';
 import LoadFromShareForm from './LoadFromShareForm';
 import UploadImageForm from './UploadImageForm';
 import LogsViewer from '../common/LogsViewer';
@@ -10,13 +12,26 @@ interface Props {
 }
 
 const DeviceFirmwareTab = ({ hostname }: Props) => {
-  const { data: image, isLoading: imageLoading } = useGetImageByDeviceQuery(hostname);
+  const { data: deviceData } = useGetDeviceQuery(hostname);
+  const device = deviceData as DeviceSchema | undefined;
+  const { data, isLoading: imageLoading } = useGetImageByDeviceQuery(hostname);
+  const image = data as ImageSchema | undefined;
   const { logs, stage, stageLabel, isActive, startInstall } = useInstallPolling(hostname);
 
   return (
     <div>
       <div className="rounded-[20px] border border-[#D1D5DB] bg-white p-7 mb-5">
-        <h3 className="text-[18px] font-bold mb-5">Текущий образ</h3>
+        <div className="flex items-center gap-3 mb-5">
+          <h3 className="text-[18px] font-bold">Текущий образ</h3>
+          {image && (
+            <ImageStatusBadge
+              testStage={device?.test_stage ?? null}
+              isInstalling={isActive}
+              installJustFinished={stage === 'done'}
+              wasInstalled={image.was_installed === true}
+            />
+          )}
+        </div>
 
         {imageLoading ? (
           <p className="text-[14px] text-[#6B7280]">Загрузка...</p>
