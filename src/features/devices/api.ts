@@ -9,6 +9,9 @@ import type {
   ImageSchema,
   LoadFromShareRequest,
   InstallTaskStatus,
+  SSHCommandRequest,
+  SSHTaskResult,
+  SSHTaskStatus,
 } from './types';
 import {
   optimisticCreateReservation,
@@ -34,6 +37,21 @@ type RawTaskStatus = {
     installation_log?: RawLogMessage[];
     traceback?: string | null;
   } | null;
+};
+
+type RawSSHResult = {
+  stdout?: string | null;
+  stderr?: string | null;
+  retcode?: number | null;
+  execution_time_s?: number | null;
+};
+
+type RawSSHTaskStatus = {
+  id?: string;
+  task_id?: string;
+  status?: string;
+  traceback?: string | null;
+  result?: RawSSHResult | null;
 };
 
 const mapCeleryStatus = (s: string | undefined): string => {
@@ -69,6 +87,26 @@ const transformTaskStatus = (raw: RawTaskStatus): InstallTaskStatus => {
     task_id: taskId,
     status,
     log: fullLog,
+  };
+};
+
+const transformSSHTaskStatus = (raw: RawSSHTaskStatus): SSHTaskStatus => {
+  const taskId = raw.task_id ?? raw.id ?? '';
+  const status = mapCeleryStatus(raw.status);
+  const r = raw.result;
+  const result: SSHTaskResult | null = r
+    ? {
+        stdout: r.stdout ?? '',
+        stderr: r.stderr ?? null,
+        retcode: r.retcode ?? 0,
+        execution_time_s: r.execution_time_s ?? 0,
+      }
+    : null;
+  return {
+    task_id: taskId,
+    status,
+    result,
+    traceback: raw.traceback ?? null,
   };
 };
 
@@ -253,6 +291,39 @@ export const devicesApi = api.injectEndpoints({
         method: 'DELETE',
       }),
     }),
+
+    runSSHCommand: builder.mutation<{ task_id: string }, SSHCommandRequest>({
+      query: (data) => {
+        const params = new URLSearchParams();
+        params.set('hostname', data.hostname);
+        params.set('username', data.username);
+        params.set('cmd', data.cmd);
+        params.set('retries', String(data.retries));
+        params.set('retry_delay', String(data.retry_delay));
+        params.set('cmd_timeout', String(data.cmd_timeout));
+        params.set('port', String(data.port));
+        return {
+          url: '/device_ssh',
+          method: 'POST',
+          body: params,
+        };
+      },
+      transformResponse: (response: { id?: string; task_id?: string }) => ({
+        task_id: response.task_id ?? response.id ?? '',
+      }),
+    }),
+
+    getSSHStatus: builder.query<SSHTaskStatus, string>({
+      query: (taskId) => `/device_ssh/queue/${taskId}`,
+      transformResponse: transformSSHTaskStatus,
+    }),
+
+    cancelSSHTask: builder.mutation<void, string>({
+      query: (taskId) => ({
+        url: `/device_ssh/queue/${taskId}`,
+        method: 'DELETE',
+      }),
+    }),
   }),
 });
 
@@ -278,4 +349,7 @@ export const {
   useInstallImageMutation,
   useLazyGetInstallStatusQuery,
   useCancelInstallMutation,
+  useRunSSHCommandMutation,
+  useLazyGetSSHStatusQuery,
+  useCancelSSHTaskMutation,
 } = devicesApi;
