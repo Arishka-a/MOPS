@@ -90,3 +90,42 @@ export interface ReloadDeviceRequest {
   retries: number;
   retry_delay: number;
 }
+
+export interface LoadFromShareRequest {
+  device_hostname: string;
+  release_type: string;
+  version: string;
+  image_type?: string;
+  comparator?: string;
+}
+
+export interface InstallTaskStatus {
+  task_id: string;
+  status: string;
+  progress?: string;
+  log?: string;
+}
+
+export interface SSHCommandRequest {
+  hostname: string;
+  username: string;
+  cmd: string;
+  retries: number;
+  retry_delay: number;
+  cmd_timeout: number;
+  port: number;
+}
+
+export interface SSHTaskResult {
+  stdout: string;
+  stderr: string | null;
+  retcode: number;
+  execution_time_s: number;
+}
+
+export interface SSHTaskStatus {
+  task_id: string;
+  status: string;
+  result: SSHTaskResult | null;
+  traceback: string | null;
+}

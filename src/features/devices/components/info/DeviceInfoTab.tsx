@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import type { DeviceSchema } from '../types';
-import { useDeviceParams } from '../hooks/useDeviceParams';
+import type { DeviceSchema } from '../../types';
+import { useDeviceParams } from '../../hooks/useDeviceParams';
 import CreateReservationForm from './CreateReservationForm';
 import ReservationInfo from './ReservationInfo'
-import DeviceParamsTable from './DeviceParamsTable'
+import DeviceParamsTable from '../common/DeviceParamsTable'
 
 interface Props {
   device: DeviceSchema;

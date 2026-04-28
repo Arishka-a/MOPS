@@ -1,6 +1,6 @@
-import type { ReservationSchema } from '../types';
-import { useDeleteReservationByHostnameMutation } from '../api';
-import { formatDate } from '../../../utils/formatDate';
+import type { ReservationSchema } from '../../types';
+import { useDeleteReservationByHostnameMutation } from '../../api';
+import { formatDate } from '../../../../utils/formatDate';
 
 interface Props {
   reservation: ReservationSchema;

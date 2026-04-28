@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import type { DeviceSchema } from '../types';
 import { DeviceConnectionStatus, DeviceTestStage, DeviceReservationStatus } from '../../../types/enums';
-import StatusBadge from './StatusBadge';
+import StatusBadge from './common/StatusBadge';
 
 interface Props {
   devices: DeviceSchema[];

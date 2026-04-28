@@ -8,11 +8,11 @@ import {
 import DeviceHeader from '../components/DeviceHeader';
 import DeviceTabs from '../components/DeviceTabs';
 import type { DeviceTab } from '../components/DeviceTabs';
-import DeviceInfoTab from '../components/DeviceInfoTab';
-import DeviceFirmwareTab from '../components/DeviceFirmwareTab';
-import DeviceSSHTab from '../components/DeviceSSHTab';
-import DeviceRS232Tab from '../components/DeviceRS232Tab';
-import DeviceFilesTab from '../components/DevicesFilesTab';
+import DeviceInfoTab from '../components/info/DeviceInfoTab';
+import DeviceFirmwareTab from '../components/firmware/DeviceFirmwareTab';
+import DeviceSSHTab from '../components/ssh/DeviceSSHTab';
+import DeviceRS232Tab from '../components/rs232/DeviceRS232Tab';
+import DeviceFilesTab from '../components/files/DevicesFilesTab';
 
 const DeviceDetailPage = () => {
   const { hostname } = useParams<{ hostname: string }>();
