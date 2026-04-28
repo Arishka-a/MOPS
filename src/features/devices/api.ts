@@ -246,6 +246,19 @@ export const devicesApi = api.injectEndpoints({
           body: params,
         };
       },
+      async onQueryStarted(args, { dispatch, queryFulfilled }) {
+        try {
+          const { data: image } = await queryFulfilled;
+          dispatch(
+            devicesApi.util.upsertQueryData('getImageByDevice', args.device_hostname, image),
+          );
+        } catch { /*  */ }
+      },
+      invalidatesTags: (_r, _e, args) => [
+        { type: 'Images', id: args.device_hostname },
+        { type: 'Device', id: args.device_hostname },
+        'Devices',
+      ],
     }),
 
     uploadImageFile: builder.mutation<ImageSchema, { formData: FormData; hostname: string }>({
@@ -254,7 +267,19 @@ export const devicesApi = api.injectEndpoints({
         method: 'POST',
         body: formData,
       }),
-      invalidatesTags: (_r, _e, { hostname }) => [{ type: 'Images', id: hostname }],
+      async onQueryStarted({ hostname }, { dispatch, queryFulfilled }) {
+        try {
+          const { data: image } = await queryFulfilled;
+          dispatch(
+            devicesApi.util.upsertQueryData('getImageByDevice', hostname, image),
+          );
+        } catch { /*  */ }
+      },
+      invalidatesTags: (_r, _e, { hostname }) => [
+        { type: 'Images', id: hostname },
+        { type: 'Device', id: hostname },
+        'Devices',
+      ],
     }),
 
     deleteImageByHostname: builder.mutation<void, string>({
@@ -262,7 +287,11 @@ export const devicesApi = api.injectEndpoints({
         url: `/image/by_hostname?device_hostname=${hostname}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (_r, _e, hostname) => [{ type: 'Images', id: hostname }],
+      invalidatesTags: (_r, _e, hostname) => [
+        { type: 'Images', id: hostname },
+        { type: 'Device', id: hostname },
+        'Devices',
+      ],
     }),
 
     installImage: builder.mutation<{ task_id: string }, string>({

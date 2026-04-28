@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useLoadImageFromShareMutation } from '../../api';
+import { savePendingInstall } from '../../hooks/imageBindingPersist';
+import type { ImageSchema } from '../../types';
 
 interface Props {
   hostname: string;
@@ -21,13 +23,14 @@ const LoadFromShareForm = ({ hostname }: Props) => {
       return;
     }
     try {
-      await loadFromShare({
+      const image = (await loadFromShare({
         device_hostname: hostname,
         release_type: releaseType,
         version: version.trim(),
         image_type: imageType.trim() || undefined,
-      }).unwrap();
-      setSuccess('Образ загружен');
+      }).unwrap()) as ImageSchema;
+      if (image?.id) savePendingInstall(hostname, image.id);
+      setSuccess('Образ привязан');
       setVersion('');
       setImageType('');
     } catch {

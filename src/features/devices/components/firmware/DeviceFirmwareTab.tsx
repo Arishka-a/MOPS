@@ -1,5 +1,11 @@
-import { useGetDeviceQuery, useGetImageByDeviceQuery } from '../../api';
+import { useEffect, useState } from 'react';
+import {
+  useGetDeviceQuery,
+  useGetImageByDeviceQuery,
+  useDeleteImageByHostnameMutation,
+} from '../../api';
 import { useInstallPolling } from '../../hooks/useInstallPolling';
+import { clearPendingInstall } from '../../hooks/imageBindingPersist';
 import type { DeviceSchema, ImageSchema } from '../../types';
 import CurrentImageInfo from './CurrentImageInfo';
 import ImageStatusBadge from './ImageStatusBadge';
@@ -11,26 +17,67 @@ interface Props {
   hostname: string;
 }
 
+const errMessage = (e: unknown): string => {
+  if (typeof e === 'object' && e !== null) {
+    const anyE = e as { data?: unknown; error?: unknown; message?: unknown };
+    if (anyE.data && typeof anyE.data === 'object') {
+      const detail = (anyE.data as { detail?: unknown }).detail;
+      if (typeof detail === 'string') return detail;
+    }
+    if (typeof anyE.data === 'string') return anyE.data;
+    if (typeof anyE.error === 'string') return anyE.error;
+    if (typeof anyE.message === 'string') return anyE.message;
+  }
+  return String(e);
+};
+
 const DeviceFirmwareTab = ({ hostname }: Props) => {
   const { data: deviceData } = useGetDeviceQuery(hostname);
   const device = deviceData as DeviceSchema | undefined;
-  const { data, isLoading: imageLoading } = useGetImageByDeviceQuery(hostname);
-  const image = data as ImageSchema | undefined;
-  const { logs, stage, stageLabel, isActive, startInstall } = useInstallPolling(hostname);
+  const {
+    data,
+    isLoading: imageLoading,
+    refetch: refetchImage,
+  } = useGetImageByDeviceQuery(hostname);
+  const fetchedImage = data as ImageSchema | undefined;
+  const { logs, stage, stageLabel, isActive, startInstall, reset } = useInstallPolling(hostname);
+  const [deleteImage, { isLoading: isDeleting }] = useDeleteImageByHostnameMutation();
+  const [deleteError, setDeleteError] = useState('');
+
+  const [optimisticDeleted, setOptimisticDeleted] = useState(false);
+  useEffect(() => {
+    setOptimisticDeleted(false);
+  }, [hostname]);
+  useEffect(() => {
+    if (!fetchedImage) setOptimisticDeleted(false);
+  }, [fetchedImage]);
+
+  const image = optimisticDeleted ? undefined : fetchedImage;
+
+  const handleDelete = async () => {
+    setDeleteError('');
+    try {
+      await deleteImage(hostname).unwrap();
+      setOptimisticDeleted(true);
+      clearPendingInstall(hostname);
+      reset();
+      void refetchImage();
+    } catch (e) {
+      setDeleteError(errMessage(e));
+    }
+  };
 
   return (
     <div>
       <div className="rounded-[20px] border border-[#D1D5DB] bg-white p-7 mb-5">
         <div className="flex items-center gap-3 mb-5">
           <h3 className="text-[18px] font-bold">Текущий образ</h3>
-          {image && (
-            <ImageStatusBadge
-              testStage={device?.test_stage ?? null}
-              isInstalling={isActive}
-              installJustFinished={stage === 'done'}
-              wasInstalled={image.was_installed === true}
-            />
-          )}
+          <ImageStatusBadge
+            hostname={hostname}
+            image={image ?? null}
+            testStage={device?.test_stage ?? null}
+            isInstalling={isActive}
+          />
         </div>
 
         {imageLoading ? (
@@ -40,9 +87,15 @@ const DeviceFirmwareTab = ({ hostname }: Props) => {
             image={image}
             onInstall={startInstall}
             isInstalling={isActive}
+            onDelete={handleDelete}
+            isDeleting={isDeleting}
           />
         ) : (
           <p className="text-[14px] text-[#6B7280]">Образ не привязан к устройству</p>
+        )}
+
+        {deleteError && (
+          <p className="mt-4 text-[14px] text-[#DC2626]">Ошибка удаления: {deleteError}</p>
         )}
 
         {isActive && (
