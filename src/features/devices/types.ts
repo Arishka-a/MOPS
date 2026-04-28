@@ -129,3 +129,20 @@ export interface SSHTaskStatus {
   result: SSHTaskResult | null;
   traceback: string | null;
 }
+
+export interface SendFileToDutRequest {
+  hostname: string;
+  username: string;
+  path_on_dut: string;
+  retries: number;
+  retry_delay: number;
+  port: number;
+}
+
+export interface SendFileToDutResult {
+  success: boolean;
+  message: string | null;
+  file_size: number | null;
+  transfer_time_s: number | null;
+  remote_path: string | null;
+}

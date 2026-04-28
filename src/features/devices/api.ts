@@ -12,6 +12,7 @@ import type {
   SSHCommandRequest,
   SSHTaskResult,
   SSHTaskStatus,
+  SendFileToDutResult,
 } from './types';
 import {
   optimisticCreateReservation,
@@ -353,6 +354,14 @@ export const devicesApi = api.injectEndpoints({
         method: 'DELETE',
       }),
     }),
+
+    sendFileToDevice: builder.mutation<SendFileToDutResult, { formData: FormData }>({
+      query: ({ formData }) => ({
+        url: '/device_files/send',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
   }),
 });
 
@@ -381,4 +390,5 @@ export const {
   useRunSSHCommandMutation,
   useLazyGetSSHStatusQuery,
   useCancelSSHTaskMutation,
+  useSendFileToDeviceMutation,
 } = devicesApi;
