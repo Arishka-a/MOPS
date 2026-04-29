@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { useRunSSHCommandMutation } from '../api';
 import type { SSHTaskResult } from '../types';
-import { applyStatusToEntry, errMessage, makeEntryId } from './sshTaskStatus';
+import { applyStatusToEntry, makeEntryId } from './sshTaskStatus';
+import { errMessage } from '../utils/errMessage';
 import { useSSHTaskPolling } from './useSSHTaskPolling';
 
 export type SSHEntryStatus =
