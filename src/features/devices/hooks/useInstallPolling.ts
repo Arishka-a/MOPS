@@ -12,7 +12,7 @@ import {
   clearInstallState,
 } from './installStatePersist';
 import { clearPendingInstall } from './imageBindingPersist';
-import { errMessage } from './sshTaskStatus';
+import { errMessage } from '../utils/errMessage';
 import { useInstallTaskPolling } from './useInstallTaskPolling';
 import {
   STAGE_LABELS,

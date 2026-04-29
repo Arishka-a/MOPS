@@ -6,6 +6,7 @@ import {
 } from '../../api';
 import { useInstallPolling } from '../../hooks/useInstallPolling';
 import { clearPendingInstall } from '../../hooks/imageBindingPersist';
+import { errMessage } from '../../utils/errMessage';
 import type { DeviceSchema, ImageSchema } from '../../types';
 import CurrentImageInfo from './CurrentImageInfo';
 import ImageStatusBadge from './ImageStatusBadge';
@@ -16,20 +17,6 @@ import LogsViewer from '../common/LogsViewer';
 interface Props {
   hostname: string;
 }
-
-const errMessage = (e: unknown): string => {
-  if (typeof e === 'object' && e !== null) {
-    const anyE = e as { data?: unknown; error?: unknown; message?: unknown };
-    if (anyE.data && typeof anyE.data === 'object') {
-      const detail = (anyE.data as { detail?: unknown }).detail;
-      if (typeof detail === 'string') return detail;
-    }
-    if (typeof anyE.data === 'string') return anyE.data;
-    if (typeof anyE.error === 'string') return anyE.error;
-    if (typeof anyE.message === 'string') return anyE.message;
-  }
-  return String(e);
-};
 
 const DeviceFirmwareTab = ({ hostname }: Props) => {
   const { data: deviceData } = useGetDeviceQuery(hostname);
@@ -59,6 +46,7 @@ const DeviceFirmwareTab = ({ hostname }: Props) => {
     try {
       await deleteImage(hostname).unwrap();
       setOptimisticDeleted(true);
+      // Образ удалён — pending-пометка тоже больше не имеет смысла.
       clearPendingInstall(hostname);
       reset();
       void refetchImage();

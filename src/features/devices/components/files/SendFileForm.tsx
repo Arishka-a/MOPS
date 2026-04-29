@@ -1,6 +1,9 @@
 import { useRef, useState } from 'react';
 import { useSendFileToDeviceMutation } from '../../api';
 import type { SendFileToDutResult } from '../../types';
+import { errMessage } from '../../utils/errMessage';
+import FormError from '../common/FormError';
+import SendFileResultPanel from './SendFileResultPanel';
 
 interface Props {
   hostname: string;
@@ -11,20 +14,6 @@ const DEFAULT_PATH = '/tmp/firmware.bin';
 const DEFAULT_RETRIES = 3;
 const DEFAULT_RETRY_DELAY = 5;
 const DEFAULT_PORT = 22;
-
-const errMessage = (e: unknown): string => {
-  if (typeof e === 'object' && e !== null) {
-    const anyE = e as { data?: unknown; error?: unknown; message?: unknown };
-    if (anyE.data && typeof anyE.data === 'object') {
-      const detail = (anyE.data as { detail?: unknown }).detail;
-      if (typeof detail === 'string') return detail;
-    }
-    if (typeof anyE.data === 'string') return anyE.data;
-    if (typeof anyE.error === 'string') return anyE.error;
-    if (typeof anyE.message === 'string') return anyE.message;
-  }
-  return String(e);
-};
 
 const SendFileForm = ({ hostname }: Props) => {
   const [sendFile, { isLoading }] = useSendFileToDeviceMutation();
@@ -164,29 +153,8 @@ const SendFileForm = ({ hostname }: Props) => {
           {isLoading ? 'Отправка...' : 'Отправить'}
         </button>
 
-        {error && <p className="text-[12px] text-[#DC2626]">{error}</p>}
-
-        {result && (
-          <div
-            className={`rounded-[10px] p-3 text-[12px] ${
-              result.success ? 'bg-[#DCFCE7] text-[#166534]' : 'bg-[#FEE2E2] text-[#991B1B]'
-            }`}
-          >
-            <p className="font-semibold mb-1">
-              {result.success ? 'Файл успешно передан' : 'Не удалось передать файл'}
-            </p>
-            {result.message && <p>{result.message}</p>}
-            {result.remote_path && (
-              <p style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                путь: {result.remote_path}
-              </p>
-            )}
-            {result.file_size != null && <p>размер: {result.file_size} Б</p>}
-            {result.transfer_time_s != null && (
-              <p>время передачи: {result.transfer_time_s.toFixed(2)} с</p>
-            )}
-          </div>
-        )}
+        <FormError message={error} />
+        {result && <SendFileResultPanel result={result} />}
       </div>
     </div>
   );

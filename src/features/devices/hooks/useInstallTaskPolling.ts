@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLazyGetInstallStatusQuery, useLazyGetReloadStatusQuery } from '../api';
 import type { InstallTaskStatus } from '../types';
-import { errMessage } from './sshTaskStatus';
+import { errMessage } from '../utils/errMessage';
 
 const POLL_INTERVAL_MS = 5000;
 

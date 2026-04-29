@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLazyGetSSHStatusQuery } from '../api';
 import type { SSHTaskStatus } from '../types';
-import { errMessage } from './sshTaskStatus';
+import { errMessage } from '../utils/errMessage';
 
 const POLL_INTERVAL_MS = 1500;
 
