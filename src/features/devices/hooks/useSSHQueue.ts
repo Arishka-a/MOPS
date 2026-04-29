@@ -35,7 +35,6 @@ export const useSSHQueue = (hostname: string) => {
   const [history, setHistory] = useState<SSHHistoryEntry[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Сброс истории при смене устройства, без useEffect.
   const [prevHostname, setPrevHostname] = useState(hostname);
   if (prevHostname !== hostname) {
     setPrevHostname(hostname);

@@ -46,7 +46,6 @@ const DeviceFirmwareTab = ({ hostname }: Props) => {
     try {
       await deleteImage(hostname).unwrap();
       setOptimisticDeleted(true);
-      // Образ удалён — pending-пометка тоже больше не имеет смысла.
       clearPendingInstall(hostname);
       reset();
       void refetchImage();
