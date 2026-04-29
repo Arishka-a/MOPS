@@ -53,7 +53,7 @@ const SendFileForm = ({ hostname }: Props) => {
     formData.append('port', String(port));
 
     try {
-      const res = (await sendFile({ formData }).unwrap()) as SendFileToDutResult;
+      const res = await sendFile({ formData }).unwrap();
       setResult(res);
       if (res.success) {
         setSelectedFile(null);

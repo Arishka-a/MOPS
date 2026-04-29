@@ -3,6 +3,7 @@ import ProtectedRoute from './ProtectedRoute';
 import LoginPage from '../features/auth/pages/LoginPage';
 import DevicesPage from '../features/devices/pages/DevicesPage';
 import DeviceDetailPage from '../features/devices/pages/DeviceDetailPage';
+import BolidPage from '../features/bolid/pages/BolidPage';
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ export const router = createBrowserRouter([
       {
         path: '/devices/:hostname',
         element: <DeviceDetailPage />,
+      },
+      {
+        path: '/controllers',
+        element: <BolidPage />,
       },
     ],
   },

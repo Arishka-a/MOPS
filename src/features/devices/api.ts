@@ -19,6 +19,7 @@ import {
   optimisticDeleteReservationByHostname,
   optimisticDeleteReservationById,
 } from './reservationOptimistic';
+import type { DevicesApiUtil } from './reservationOptimistic';
 
 type RawLogMessage = {
   message_id?: string;
@@ -111,6 +112,11 @@ const transformSSHTaskStatus = (raw: RawSSHTaskStatus): SSHTaskStatus => {
   };
 };
 
+const lazyUtil: DevicesApiUtil = {
+  updateQueryData: (endpointName, arg, updater) =>
+    (devicesApi.util.updateQueryData as any)(endpointName, arg, updater),
+};
+
 export const devicesApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getDevices: builder.query<DeviceSchema[], DeviceFilters | void>({
@@ -161,14 +167,14 @@ export const devicesApi = api.injectEndpoints({
     deleteReservationById: builder.mutation<void, string>({
       query: (id) => ({ url: `/device_reserve/by_id?id=${id}`, method: 'DELETE' }),
       onQueryStarted: (id, api) =>
-        optimisticDeleteReservationById(id, api, devicesApi.util),
+        optimisticDeleteReservationById(id, api, lazyUtil),
       invalidatesTags: ['Reservations', 'Devices', 'Device'],
     }),
 
     deleteReservationByHostname: builder.mutation<void, string>({
       query: (hostname) => ({ url: `/device_reserve/by_hostname?hostname=${hostname}`, method: 'DELETE' }),
       onQueryStarted: (hostname, api) =>
-        optimisticDeleteReservationByHostname(hostname, api, devicesApi.util),
+        optimisticDeleteReservationByHostname(hostname, api, lazyUtil),
       invalidatesTags: (_result, _error, hostname) => [
         'Reservations',
         'Devices',
@@ -183,7 +189,7 @@ export const devicesApi = api.injectEndpoints({
         body: data,
       }),
       onQueryStarted: (arg, api) =>
-        optimisticCreateReservation(arg, api, devicesApi.util),
+        optimisticCreateReservation(arg, api, lazyUtil),
       invalidatesTags: (_result, _error, arg) => {
         const deviceTags = (arg.by_hostname ?? []).map((h) => ({ type: 'Device' as const, id: h }));
         return ['Reservations', 'Devices', ...deviceTags];
