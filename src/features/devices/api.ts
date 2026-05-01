@@ -219,20 +219,6 @@ export const devicesApi = api.injectEndpoints({
       transformResponse: transformTaskStatus,
     }),
 
-    controlBolidPin: builder.mutation<void, { hostname: string; state: number; bolid_name: string }>({
-      query: (data) => {
-        const params = new URLSearchParams();
-        params.set('hostname', data.hostname);
-        params.set('state', String(data.state));
-        params.set('bolid_name', data.bolid_name);
-        return {
-          url: '/bolid_pins/control',
-          method: 'POST',
-          body: params,
-        };
-      },
-      invalidatesTags: ['Devices'],
-    }),
 
     getImageByDevice: builder.query<ImageSchema, string>({
       query: (hostname) => `/image/by_device?device_hostname=${hostname}`,
@@ -280,7 +266,7 @@ export const devicesApi = api.injectEndpoints({
           dispatch(
             devicesApi.util.upsertQueryData('getImageByDevice', hostname, image),
           );
-        } catch { /*  */ }
+        } catch { /* ошибка обработается на стороне формы */ }
       },
       invalidatesTags: (_r, _e, { hostname }) => [
         { type: 'Images', id: hostname },
@@ -385,7 +371,6 @@ export const {
   useCreateReservationMutation,
   useReloadDeviceMutation,
   useLazyGetReloadStatusQuery,
-  useControlBolidPinMutation,
   useGetImageByDeviceQuery,
   useLoadImageFromShareMutation,
   useUploadImageFileMutation,
