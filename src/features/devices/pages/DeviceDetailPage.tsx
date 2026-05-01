@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import {
-  useGetDeviceQuery,
-  useReloadDeviceMutation,
-  useControlBolidPinMutation,
-} from '../api';
+import { useGetDeviceQuery } from '../api';
+import { useDeviceControl } from '../hooks/useDeviceControl';
 import DeviceHeader from '../components/DeviceHeader';
 import DeviceTabs from '../components/DeviceTabs';
 import type { DeviceTab } from '../components/DeviceTabs';
@@ -13,46 +10,30 @@ import DeviceFirmwareTab from '../components/firmware/DeviceFirmwareTab';
 import DeviceSSHTab from '../components/ssh/DeviceSSHTab';
 import DeviceRS232Tab from '../components/rs232/DeviceRS232Tab';
 import DeviceFilesTab from '../components/files/DevicesFilesTab';
+import FormError from '../components/common/FormError';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const DeviceDetailPage = () => {
   const { hostname } = useParams<{ hostname: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<DeviceTab>('info');
+  const [confirmingPowerOff, setConfirmingPowerOff] = useState(false);
 
   const { data: device, isLoading, error } = useGetDeviceQuery(hostname!, {
     skip: !hostname,
     pollingInterval: 10000,
   });
 
-  const [reloadDevice, { isLoading: isReloading }] = useReloadDeviceMutation();
-  const [controlPin, { isLoading: isPoweringOff }] = useControlBolidPinMutation();
+  const control = useDeviceControl(device);
 
-  const handleReload = async () => {
-    if (!device) return;
-    try {
-      await reloadDevice({
-        hostname: device.hostname,
-        ssh_username: 'root',
-        retries: 3,
-        retry_delay: 5,
-      }).unwrap();
-    } catch {
-      // 
-    }
+  const handlePowerOffClick = () => {
+    setConfirmingPowerOff(true);
   };
-
-  const handlePowerOff = async () => {
-    if (!device?.output_power) return;
-    try {
-      await controlPin({
-        hostname: device.hostname,
-        state: 0,
-        bolid_name: device.output_power.bolid_name,
-      }).unwrap();
-    } catch {
-      // 
-    }
+  const confirmPowerOff = () => {
+    setConfirmingPowerOff(false);
+    control.powerOff();
   };
+  const cancelPowerOff = () => setConfirmingPowerOff(false);
 
   if (!hostname) {
     return (
@@ -109,13 +90,32 @@ const DeviceDetailPage = () => {
     <div style={{ padding: '36px 120px', margin: '0 auto' }}>
       <DeviceHeader
         device={device}
-        onReload={handleReload}
-        onPowerOff={handlePowerOff}
-        isReloading={isReloading}
-        isPoweringOff={isPoweringOff}
+        onReload={control.reload}
+        onPowerOff={handlePowerOffClick}
+        onPowerOn={control.powerOn}
+        isReloading={control.isReloading}
+        isPowerToggling={control.isPowerToggling}
+        canTogglePower={control.canTogglePower}
+        isPoweredOff={control.isPoweredOff}
       />
+      {control.error && (
+        <div className="mb-4">
+          <FormError message={control.error} />
+        </div>
+      )}
       <DeviceTabs activeTab={activeTab} onChange={setActiveTab} />
       {renderTab()}
+
+      <ConfirmDialog
+        open={confirmingPowerOff}
+        title="Отключить устройство?"
+        message={`Питание «${device.hostname}» будет снято через реле. Устройство станет недоступно до повторного включения.`}
+        confirmLabel="Отключить"
+        cancelLabel="Отмена"
+        variant="danger"
+        onConfirm={confirmPowerOff}
+        onCancel={cancelPowerOff}
+      />
     </div>
   );
 };

@@ -5,7 +5,7 @@ type Patch = { undo: () => void };
 
 type UpdateQueryDataThunk = (...args: unknown[]) => Patch;
 
-type DevicesApiUtil = {
+export type DevicesApiUtil = {
   updateQueryData: (
     endpointName: 'getDevice',
     arg: string,

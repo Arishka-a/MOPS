@@ -28,7 +28,7 @@ const renderResultBody = (entry: SSHHistoryEntry): { lines: string[]; tone: 'ok'
     if (lines.length === 0) lines.push('Задача завершилась с ошибкой');
     return { lines, tone: 'err' };
   }
-  // completed
+
   const out: string[] = [];
   if (entry.result?.stdout) out.push(entry.result.stdout);
   if (entry.result?.stderr) out.push(entry.result.stderr);
@@ -71,7 +71,7 @@ const SSHConsole = ({
       style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', lineHeight: '1.6' }}
     >
       {history.length === 0 && !isExecuting && (
-        <div className="text-[#6B7280]">Введите команду и нажмите Enter</div>
+        <div className="text-[#fff]">Введите команду и нажмите Enter</div>
       )}
 
       {history.map((entry) => {
@@ -83,11 +83,11 @@ const SSHConsole = ({
         return (
           <div key={entry.id}>
             <div>
-              <span className="text-[#6B7280]">{prompt} </span>
+              <span className="text-[#fff]">{prompt} </span>
               <span>{entry.command}</span>
             </div>
             {entry.taskId && (
-              <div className="text-[#6B7280]">
+              <div className="text-[#fff]">
                 [task_id:{' '}
                 <button
                   type="button"
@@ -114,7 +114,7 @@ const SSHConsole = ({
       })}
 
       <div className="flex items-center">
-        <span className="text-[#6B7280] mr-2">{prompt}</span>
+        <span className="text-[#fff] mr-2">{prompt}</span>
         <input
           ref={inputRef}
           type="text"

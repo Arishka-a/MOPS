@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { useUploadImageFileMutation } from '../../api';
 import { savePendingInstall } from '../../hooks/imageBindingPersist';
-import type { ImageSchema } from '../../types';
 
 interface Props {
   hostname: string;
@@ -27,7 +26,7 @@ const UploadImageForm = ({ hostname }: Props) => {
     formData.append('device_hostname', hostname);
     formData.append('release_type', releaseType);
     try {
-      const image = (await uploadFile({ formData, hostname }).unwrap()) as ImageSchema;
+      const image = await uploadFile({ formData, hostname }).unwrap();
       if (image?.id) savePendingInstall(hostname, image.id);
       setSuccess('Файл загружен');
       setSelectedFile(null);

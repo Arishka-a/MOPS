@@ -7,8 +7,11 @@ interface Props {
   device: DeviceSchema;
   onReload: () => void;
   onPowerOff: () => void;
+  onPowerOn: () => void;
   isReloading?: boolean;
-  isPoweringOff?: boolean;
+  isPowerToggling?: boolean;
+  canTogglePower?: boolean;
+  isPoweredOff?: boolean;
 }
 
 const connMap: Record<string, { text: string; color: 'green' | 'red' }> = {
@@ -24,12 +27,26 @@ const stageMap: Record<string, { text: string; color: 'green' | 'red' | 'orange'
   [DeviceTestStage.RELOADING]: { text: 'Перезагрузка', color: 'orange' },
 };
 
-const DeviceHeader = ({ device, onReload, onPowerOff, isReloading, isPoweringOff }: Props) => {
+const DeviceHeader = ({
+  device,
+  onReload,
+  onPowerOff,
+  onPowerOn,
+  isReloading,
+  isPowerToggling,
+  canTogglePower = true,
+  isPoweredOff,
+}: Props) => {
   const navigate = useNavigate();
 
   const conn = connMap[device.connection_status] ?? { text: device.connection_status, color: 'gray' as const };
   const stage = stageMap[device.test_stage] ?? { text: device.test_stage, color: 'gray' as const };
   const isReserved = device.reservation_status === DeviceReservationStatus.RESERVED;
+
+  const togglerDisabled = !canTogglePower || isPowerToggling;
+  const togglerTitle = !canTogglePower
+    ? 'У устройства не настроено реле питания'
+    : undefined;
 
   return (
     <div className="flex items-center gap-4 mb-6">
@@ -56,17 +73,30 @@ const DeviceHeader = ({ device, onReload, onPowerOff, isReloading, isPoweringOff
         <button
           onClick={onReload}
           disabled={isReloading}
-          className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50"
+          className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isReloading ? 'Перезагрузка...' : 'Перезагрузить'}
         </button>
-        <button
-          onClick={onPowerOff}
-          disabled={isPoweringOff}
-          className="bg-[#DC2626] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#b91c1c] disabled:opacity-50"
-        >
-          {isPoweringOff ? 'Отключение...' : 'Отключить'}
-        </button>
+
+        {isPoweredOff ? (
+          <button
+            onClick={onPowerOn}
+            disabled={togglerDisabled}
+            title={togglerTitle}
+            className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPowerToggling ? 'Включение...' : 'Включить'}
+          </button>
+        ) : (
+          <button
+            onClick={onPowerOff}
+            disabled={togglerDisabled}
+            title={togglerTitle}
+            className="bg-[#DC2626] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isPowerToggling ? 'Отключение...' : 'Отключить'}
+          </button>
+        )}
       </div>
     </div>
   );
