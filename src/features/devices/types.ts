@@ -75,6 +75,18 @@ export interface ImageSchema {
   was_installed: boolean;
 }
 
+/** Ответ POST /api/image/cleanup. */
+export interface ImageCleanupStats {
+  files_deleted: number;
+  db_records_deleted: number;
+  errors: number;
+}
+
+export interface ImageCleanupResponse {
+  message: string;
+  statistics: ImageCleanupStats;
+}
+
 export interface CreateReservationRequest {
   time_start?: string;
   time_end?: string;

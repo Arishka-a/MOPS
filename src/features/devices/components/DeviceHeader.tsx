@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import type { DeviceSchema } from '../types';
-import { DeviceConnectionStatus, DeviceTestStage, DeviceReservationStatus } from '../../../types/enums';
+import { DeviceReservationStatus } from '../../../types/enums';
 import StatusBadge from './common/StatusBadge';
+import { getConnectionDisplay, getTestStageDisplay } from '../utils/deviceStatus';
 
 interface Props {
   device: DeviceSchema;
@@ -13,19 +14,6 @@ interface Props {
   canTogglePower?: boolean;
   isPoweredOff?: boolean;
 }
-
-const connMap: Record<string, { text: string; color: 'green' | 'red' }> = {
-  [DeviceConnectionStatus.AVAILABLE]: { text: 'Онлайн', color: 'green' },
-  [DeviceConnectionStatus.UNAVAILABLE]: { text: 'Офлайн', color: 'red' },
-};
-
-const stageMap: Record<string, { text: string; color: 'green' | 'red' | 'orange' | 'blue' | 'gray' }> = {
-  [DeviceTestStage.NONE]: { text: 'Свободно', color: 'gray' },
-  [DeviceTestStage.INSTALLING_IMAGE]: { text: 'Прошивка', color: 'orange' },
-  [DeviceTestStage.MANUAL_TEST]: { text: 'Тестирование', color: 'orange' },
-  [DeviceTestStage.AUTO_TEST]: { text: 'Авто тест', color: 'orange' },
-  [DeviceTestStage.RELOADING]: { text: 'Перезагрузка', color: 'orange' },
-};
 
 const DeviceHeader = ({
   device,
@@ -39,8 +27,8 @@ const DeviceHeader = ({
 }: Props) => {
   const navigate = useNavigate();
 
-  const conn = connMap[device.connection_status] ?? { text: device.connection_status, color: 'gray' as const };
-  const stage = stageMap[device.test_stage] ?? { text: device.test_stage, color: 'gray' as const };
+  const conn = getConnectionDisplay(device.connection_status);
+  const stage = getTestStageDisplay(device.test_stage);
   const isReserved = device.reservation_status === DeviceReservationStatus.RESERVED;
 
   const togglerDisabled = !canTogglePower || isPowerToggling;

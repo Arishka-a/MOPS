@@ -1,5 +1,4 @@
 import type { DeviceSchema, ReservationSchema, CreateReservationRequest } from './types';
-import type { UserSchema } from '../auth/types';
 
 type Patch = { undo: () => void };
 
@@ -9,7 +8,7 @@ export type DevicesApiUtil = {
   updateQueryData: (
     endpointName: 'getDevice',
     arg: string,
-    updater: (draft: DeviceSchema) => void
+    updater: (draft: DeviceSchema) => void,
   ) => UpdateQueryDataThunk;
 };
 
@@ -23,7 +22,7 @@ interface LifecycleApi<ReturnType = unknown> {
 
 async function awaitAndRollback(
   queryFulfilled: Promise<unknown>,
-  patches: Patch[]
+  patches: Patch[],
 ): Promise<void> {
   try {
     await queryFulfilled;
@@ -35,7 +34,7 @@ async function awaitAndRollback(
 export async function optimisticCreateReservation(
   arg: CreateReservationRequest,
   api: LifecycleApi<ReservationSchema>,
-  util: DevicesApiUtil
+  util: DevicesApiUtil,
 ): Promise<void> {
   const hostnames = arg.by_hostname ?? [];
   if (hostnames.length === 0) {
@@ -44,10 +43,10 @@ export async function optimisticCreateReservation(
   }
 
   const authState = (api.getState() as {
-    auth: { user: { username: string; id: string; role: string } | null };
+    auth: { username: string | null };
   }).auth;
-  const currentUser = authState.user;
-  if (!currentUser) {
+  const currentUsername = authState.username;
+  if (!currentUsername) {
     await awaitAndRollback(api.queryFulfilled, []);
     return;
   }
@@ -55,9 +54,9 @@ export async function optimisticCreateReservation(
   const tempReservation: ReservationSchema = {
     id: `temp-${Date.now()}`,
     user: {
-      username: currentUser.username,
-      id: currentUser.id,
-      role: currentUser.role as UserSchema['role'],
+      username: currentUsername,
+      id: '',
+      role: 'user',
     },
     time_start: arg.time_start ?? null,
     time_end: arg.time_end ?? null,
@@ -68,8 +67,8 @@ export async function optimisticCreateReservation(
     api.dispatch(
       util.updateQueryData('getDevice', hostname, (draft) => {
         draft.reservation = tempReservation;
-      })
-    )
+      }),
+    ),
   );
 
   await awaitAndRollback(api.queryFulfilled, patches);
@@ -78,12 +77,12 @@ export async function optimisticCreateReservation(
 export async function optimisticDeleteReservationByHostname(
   hostname: string,
   api: LifecycleApi<void>,
-  util: DevicesApiUtil
+  util: DevicesApiUtil,
 ): Promise<void> {
   const patch = api.dispatch(
     util.updateQueryData('getDevice', hostname, (draft) => {
       draft.reservation = null;
-    })
+    }),
   );
   await awaitAndRollback(api.queryFulfilled, [patch]);
 }
@@ -91,7 +90,7 @@ export async function optimisticDeleteReservationByHostname(
 export async function optimisticDeleteReservationById(
   id: string,
   api: LifecycleApi<void>,
-  util: DevicesApiUtil
+  util: DevicesApiUtil,
 ): Promise<void> {
   const state = api.getState() as {
     api: {
@@ -115,7 +114,7 @@ export async function optimisticDeleteReservationById(
     const patch = api.dispatch(
       util.updateQueryData('getDevice', hostname, (draft) => {
         draft.reservation = null;
-      })
+      }),
     );
     patches.push(patch);
   }

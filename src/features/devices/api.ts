@@ -7,6 +7,7 @@ import type {
   CreateReservationRequest,
   ReloadDeviceRequest,
   ImageSchema,
+  ImageCleanupResponse,
   LoadFromShareRequest,
   InstallTaskStatus,
   SSHCommandRequest,
@@ -83,7 +84,9 @@ const transformTaskStatus = (raw: RawTaskStatus): InstallTaskStatus => {
   const log = formatLogMessages(raw.result?.installation_log);
   const traceback = raw.result?.traceback ?? raw.traceback;
   const fullLog = traceback
-    ? (log ? `${log}\n[TRACEBACK]\n${traceback}` : `[TRACEBACK]\n${traceback}`)
+    ? log
+      ? `${log}\n[TRACEBACK]\n${traceback}`
+      : `[TRACEBACK]\n${traceback}`
     : log;
   return {
     task_id: taskId,
@@ -111,6 +114,13 @@ const transformSSHTaskStatus = (raw: RawSSHTaskStatus): SSHTaskStatus => {
     traceback: raw.traceback ?? null,
   };
 };
+
+const transformSSHSyncResult = (raw: RawSSHResult): SSHTaskResult => ({
+  stdout: raw.stdout ?? '',
+  stderr: raw.stderr ?? null,
+  retcode: raw.retcode ?? 0,
+  execution_time_s: raw.execution_time_s ?? 0,
+});
 
 const lazyUtil: DevicesApiUtil = {
   updateQueryData: (endpointName, arg, updater) =>
@@ -166,15 +176,13 @@ export const devicesApi = api.injectEndpoints({
 
     deleteReservationById: builder.mutation<void, string>({
       query: (id) => ({ url: `/device_reserve/by_id?id=${id}`, method: 'DELETE' }),
-      onQueryStarted: (id, api) =>
-        optimisticDeleteReservationById(id, api, lazyUtil),
+      onQueryStarted: (id, api) => optimisticDeleteReservationById(id, api, lazyUtil),
       invalidatesTags: ['Reservations', 'Devices', 'Device'],
     }),
 
     deleteReservationByHostname: builder.mutation<void, string>({
       query: (hostname) => ({ url: `/device_reserve/by_hostname?hostname=${hostname}`, method: 'DELETE' }),
-      onQueryStarted: (hostname, api) =>
-        optimisticDeleteReservationByHostname(hostname, api, lazyUtil),
+      onQueryStarted: (hostname, api) => optimisticDeleteReservationByHostname(hostname, api, lazyUtil),
       invalidatesTags: (_result, _error, hostname) => [
         'Reservations',
         'Devices',
@@ -188,8 +196,7 @@ export const devicesApi = api.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      onQueryStarted: (arg, api) =>
-        optimisticCreateReservation(arg, api, lazyUtil),
+      onQueryStarted: (arg, api) => optimisticCreateReservation(arg, api, lazyUtil),
       invalidatesTags: (_result, _error, arg) => {
         const deviceTags = (arg.by_hostname ?? []).map((h) => ({ type: 'Device' as const, id: h }));
         return ['Reservations', 'Devices', ...deviceTags];
@@ -219,6 +226,16 @@ export const devicesApi = api.injectEndpoints({
       transformResponse: transformTaskStatus,
     }),
 
+    getAllImages: builder.query<ImageSchema[], void>({
+      query: () => '/image',
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'Images' as const, id })),
+              { type: 'Images', id: 'LIST' },
+            ]
+          : [{ type: 'Images', id: 'LIST' }],
+    }),
 
     getImageByDevice: builder.query<ImageSchema, string>({
       query: (hostname) => `/image/by_device?device_hostname=${hostname}`,
@@ -242,13 +259,14 @@ export const devicesApi = api.injectEndpoints({
       async onQueryStarted(args, { dispatch, queryFulfilled }) {
         try {
           const { data: image } = await queryFulfilled;
-          dispatch(
-            devicesApi.util.upsertQueryData('getImageByDevice', args.device_hostname, image),
-          );
-        } catch { /*  */ }
+          dispatch(devicesApi.util.upsertQueryData('getImageByDevice', args.device_hostname, image));
+        } catch {
+          //
+        }
       },
       invalidatesTags: (_r, _e, args) => [
         { type: 'Images', id: args.device_hostname },
+        { type: 'Images', id: 'LIST' },
         { type: 'Device', id: args.device_hostname },
         'Devices',
       ],
@@ -263,13 +281,14 @@ export const devicesApi = api.injectEndpoints({
       async onQueryStarted({ hostname }, { dispatch, queryFulfilled }) {
         try {
           const { data: image } = await queryFulfilled;
-          dispatch(
-            devicesApi.util.upsertQueryData('getImageByDevice', hostname, image),
-          );
-        } catch { /* ошибка обработается на стороне формы */ }
+          dispatch(devicesApi.util.upsertQueryData('getImageByDevice', hostname, image));
+        } catch {
+          //
+        }
       },
       invalidatesTags: (_r, _e, { hostname }) => [
         { type: 'Images', id: hostname },
+        { type: 'Images', id: 'LIST' },
         { type: 'Device', id: hostname },
         'Devices',
       ],
@@ -282,9 +301,27 @@ export const devicesApi = api.injectEndpoints({
       }),
       invalidatesTags: (_r, _e, hostname) => [
         { type: 'Images', id: hostname },
+        { type: 'Images', id: 'LIST' },
         { type: 'Device', id: hostname },
         'Devices',
       ],
+    }),
+
+    deleteImageById: builder.mutation<void, string>({
+      query: (imageId) => ({
+        url: `/image/by_id?image_id=${imageId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_r, _e, imageId) => [
+        { type: 'Images', id: imageId },
+        { type: 'Images', id: 'LIST' },
+        'Devices',
+      ],
+    }),
+
+    cleanupImages: builder.mutation<ImageCleanupResponse, void>({
+      query: () => ({ url: '/image/cleanup', method: 'POST' }),
+      invalidatesTags: [{ type: 'Images', id: 'LIST' }, 'Devices'],
     }),
 
     installImage: builder.mutation<{ task_id: string }, string>({
@@ -335,6 +372,25 @@ export const devicesApi = api.injectEndpoints({
       }),
     }),
 
+    runSSHCommandSync: builder.mutation<SSHTaskResult, SSHCommandRequest>({
+      query: (data) => {
+        const params = new URLSearchParams();
+        params.set('hostname', data.hostname);
+        params.set('username', data.username);
+        params.set('cmd', data.cmd);
+        params.set('retries', String(data.retries));
+        params.set('retry_delay', String(data.retry_delay));
+        params.set('cmd_timeout', String(data.cmd_timeout));
+        params.set('port', String(data.port));
+        return {
+          url: '/device_ssh/no_wait',
+          method: 'POST',
+          body: params,
+        };
+      },
+      transformResponse: transformSSHSyncResult,
+    }),
+
     getSSHStatus: builder.query<SSHTaskStatus, string>({
       query: (taskId) => `/device_ssh/queue/${taskId}`,
       transformResponse: transformSSHTaskStatus,
@@ -371,14 +427,18 @@ export const {
   useCreateReservationMutation,
   useReloadDeviceMutation,
   useLazyGetReloadStatusQuery,
+  useGetAllImagesQuery,
   useGetImageByDeviceQuery,
   useLoadImageFromShareMutation,
   useUploadImageFileMutation,
   useDeleteImageByHostnameMutation,
+  useDeleteImageByIdMutation,
+  useCleanupImagesMutation,
   useInstallImageMutation,
   useLazyGetInstallStatusQuery,
   useCancelInstallMutation,
   useRunSSHCommandMutation,
+  useRunSSHCommandSyncMutation,
   useLazyGetSSHStatusQuery,
   useCancelSSHTaskMutation,
   useSendFileToDeviceMutation,
