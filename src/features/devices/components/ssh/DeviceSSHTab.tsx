@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSSHQueue } from '../../hooks/useSSHQueue';
-import type { SSHCommandParams } from '../../hooks/useSSHQueue';
+import type { SSHCommandParams, SSHMode } from '../../hooks/useSSHQueue';
 import SSHCommandForm from './SSHCommandForm';
 import SSHConsole from './SSHConsole';
 import SSHTaskManager from './SSHTaskManager';
@@ -18,6 +18,7 @@ const DEFAULT_PARAMS: SSHCommandParams = {
 
 const DeviceSSHTab = ({ hostname }: Props) => {
   const [params, setParams] = useState<SSHCommandParams>(DEFAULT_PARAMS);
+  const [mode, setMode] = useState<SSHMode>('queue');
   const [command, setCommand] = useState('');
   const [managerTaskId, setManagerTaskId] = useState('');
   const { history, isExecuting, execute } = useSSHQueue(hostname);
@@ -30,7 +31,7 @@ const DeviceSSHTab = ({ hostname }: Props) => {
     if (!command.trim() || isExecuting) return;
     const toRun = command;
     setCommand('');
-    await execute(toRun, params);
+    await execute(toRun, params, mode);
   };
 
   return (
@@ -39,6 +40,8 @@ const DeviceSSHTab = ({ hostname }: Props) => {
         <SSHCommandForm
           params={params}
           onChange={handleParamsChange}
+          mode={mode}
+          onModeChange={setMode}
           onExecute={handleSubmit}
           isExecuting={isExecuting}
           canExecute={command.trim().length > 0}
@@ -54,10 +57,7 @@ const DeviceSSHTab = ({ hostname }: Props) => {
         />
       </div>
 
-      <SSHTaskManager
-        taskId={managerTaskId}
-        onTaskIdChange={setManagerTaskId}
-      />
+      <SSHTaskManager taskId={managerTaskId} onTaskIdChange={setManagerTaskId} />
     </div>
   );
 };

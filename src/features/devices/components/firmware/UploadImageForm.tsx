@@ -37,42 +37,42 @@ const UploadImageForm = ({ hostname }: Props) => {
   };
 
   return (
-    <div className="flex-1 rounded-[20px] border-[2px] border-[#2626E0] bg-white p-7">
+    <div className="flex-1 rounded-lg border-[2px] border-brand bg-white p-7">
       <h3 className="text-[16px] font-bold text-center mb-5">Загрузить файл</h3>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <label className="text-[12px] text-[#6B7280] font-semibold">
-            Файл <span className="text-[#DC2626]">*</span>
+          <label className="text-[12px] text-muted font-semibold">
+            Файл <span className="text-danger">*</span>
           </label>
           <input
             ref={fileInputRef}
             type="file"
             onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
-            className="border border-[#D1D5DB] rounded-[10px] px-3 py-[9px] text-[14px] bg-white outline-none"
+            className="border border-border rounded-sm px-3 py-[9px] text-[14px] bg-white outline-none"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-[12px] text-[#6B7280] font-semibold">
-            Тип релиза <span className="text-[#DC2626]">*</span>
+          <label className="text-[12px] text-muted font-semibold">
+            Тип релиза <span className="text-danger">*</span>
           </label>
           <input
             type="text"
             value={releaseType}
             onChange={(e) => setReleaseType(e.target.value)}
             placeholder="release"
-            className="border border-[#D1D5DB] rounded-[10px] px-3 py-[9px] text-[14px] bg-white outline-none"
+            className="border border-border rounded-sm px-3 py-[9px] text-[14px] bg-white outline-none"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           />
         </div>
         <button
           onClick={handleSubmit}
           disabled={isLoading}
-          className="bg-[#2626E0] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#1e1ebf] disabled:opacity-50 self-center"
+          className="bg-brand text-white border-none rounded-md px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-brand-hover disabled:opacity-50 self-center"
         >
           {isLoading ? 'Загрузка...' : 'Загрузить'}
         </button>
-        {error && <p className="text-[12px] text-[#DC2626]">{error}</p>}
-        {success && <p className="text-[12px] text-[#16A34A]">{success}</p>}
+        {error && <p className="text-[12px] text-danger">{error}</p>}
+        {success && <p className="text-[12px] text-success">{success}</p>}
       </div>
     </div>
   );

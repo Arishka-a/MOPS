@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLoginMutation, useRegisterMutation } from '../api';
 import { setCredentials } from '../authSlice';
 import { useAppDispatch } from '../../../hooks/redux';
+import { getUsernameFromJwt } from '../../../utils/jwt';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -28,6 +29,20 @@ const LoginPage = () => {
     return null;
   };
 
+  const performLogin = async () => {
+    const tokenData = await login({ username, password }).unwrap();
+    const usernameFromToken =
+      getUsernameFromJwt(tokenData.access_token) ?? username;
+
+    dispatch(
+      setCredentials({
+        token: tokenData.access_token,
+        username: usernameFromToken,
+      }),
+    );
+    navigate('/', { replace: true });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -39,29 +54,13 @@ const LoginPage = () => {
     }
 
     try {
-      if (isLogin) {
-        const tokenData = await login({ username, password }).unwrap();
-        dispatch(
-          setCredentials({
-            user: { username, id: '', role: 'user' as any, is_active: true },
-            token: tokenData.access_token,
-          })
-        );
-        navigate('/', { replace: true });
-      } else {
+      if (!isLogin) {
         await register({ username, password }).unwrap();
-        const tokenData = await login({ username, password }).unwrap();
-        dispatch(
-          setCredentials({
-            user: { username, id: '', role: 'user' as any, is_active: true },
-            token: tokenData.access_token,
-          })
-        );
-        navigate('/', { replace: true });
       }
-    } catch (err: any) {
-      const message =
-        err?.data?.detail || err?.data?.message || 'Произошла ошибка';
+      await performLogin();
+    } catch (err: unknown) {
+      const e = err as { data?: { detail?: unknown; message?: unknown } };
+      const message = e?.data?.detail ?? e?.data?.message ?? 'Произошла ошибка';
       setError(typeof message === 'string' ? message : JSON.stringify(message));
     }
   };
@@ -78,11 +77,17 @@ const LoginPage = () => {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
+        >
           <div className="flex rounded-xl bg-gray-100 p-1 mb-6">
             <button
               type="button"
-              onClick={() => { setIsLogin(true); setError(''); }}
+              onClick={() => {
+                setIsLogin(true);
+                setError('');
+              }}
               className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
                 isLogin
                   ? 'bg-indigo-600 text-white shadow-sm'
@@ -93,7 +98,10 @@ const LoginPage = () => {
             </button>
             <button
               type="button"
-              onClick={() => { setIsLogin(false); setError(''); }}
+              onClick={() => {
+                setIsLogin(false);
+                setError('');
+              }}
               className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
                 !isLogin
                   ? 'bg-indigo-600 text-white shadow-sm'
@@ -106,11 +114,16 @@ const LoginPage = () => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="login-username"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Имя пользователя <span className="text-red-500">*</span>
               </label>
               <input
+                id="login-username"
                 type="text"
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="От 3 до 32 символов"
@@ -121,11 +134,16 @@ const LoginPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label
+                htmlFor="login-password"
+                className="block text-sm font-medium text-gray-700 mb-1.5"
+              >
                 Пароль <span className="text-red-500">*</span>
               </label>
               <input
+                id="login-password"
                 type="password"
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="От 6 до 32 символов"
@@ -136,14 +154,16 @@ const LoginPage = () => {
             </div>
 
             {error && (
-              <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
+              <div
+                role="alert"
+                className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5"
+              >
                 {error}
               </div>
             )}
 
             <button
-              type="button"
-              onClick={handleSubmit}
+              type="submit"
               disabled={isLoading}
               className="w-full py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg
                          hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500
@@ -152,7 +172,7 @@ const LoginPage = () => {
               {isLoading ? 'Подождите...' : isLogin ? 'Войти' : 'Зарегистрироваться'}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

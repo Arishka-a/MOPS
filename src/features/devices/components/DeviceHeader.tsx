@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import type { DeviceSchema } from '../types';
-import { DeviceConnectionStatus, DeviceTestStage, DeviceReservationStatus } from '../../../types/enums';
+import { DeviceReservationStatus } from '../../../types/enums';
 import StatusBadge from './common/StatusBadge';
+import { getConnectionDisplay, getTestStageDisplay } from '../utils/deviceStatus';
 
 interface Props {
   device: DeviceSchema;
@@ -14,18 +15,18 @@ interface Props {
   isPoweredOff?: boolean;
 }
 
-const connMap: Record<string, { text: string; color: 'green' | 'red' }> = {
-  [DeviceConnectionStatus.AVAILABLE]: { text: 'Онлайн', color: 'green' },
-  [DeviceConnectionStatus.UNAVAILABLE]: { text: 'Офлайн', color: 'red' },
-};
+const SOFT_BUTTON_BASE =
+  'border-none rounded-md px-6 py-[10px] text-[14px] font-bold cursor-pointer ' +
+  'disabled:opacity-50 disabled:cursor-not-allowed';
 
-const stageMap: Record<string, { text: string; color: 'green' | 'red' | 'orange' | 'blue' | 'gray' }> = {
-  [DeviceTestStage.NONE]: { text: 'Свободно', color: 'gray' },
-  [DeviceTestStage.INSTALLING_IMAGE]: { text: 'Прошивка', color: 'orange' },
-  [DeviceTestStage.MANUAL_TEST]: { text: 'Тестирование', color: 'orange' },
-  [DeviceTestStage.AUTO_TEST]: { text: 'Авто тест', color: 'orange' },
-  [DeviceTestStage.RELOADING]: { text: 'Перезагрузка', color: 'orange' },
-};
+const SOFT_BRAND_BUTTON =
+  `${SOFT_BUTTON_BASE} bg-brand-tint text-brand hover:bg-indigo-200`;
+
+const SOFT_SUCCESS_BUTTON =
+  `${SOFT_BUTTON_BASE} bg-success-tint text-success hover:bg-green-200`;
+
+const SOFT_DANGER_BUTTON =
+  `${SOFT_BUTTON_BASE} bg-danger-tint text-danger hover:bg-red-200`;
 
 const DeviceHeader = ({
   device,
@@ -39,8 +40,8 @@ const DeviceHeader = ({
 }: Props) => {
   const navigate = useNavigate();
 
-  const conn = connMap[device.connection_status] ?? { text: device.connection_status, color: 'gray' as const };
-  const stage = stageMap[device.test_stage] ?? { text: device.test_stage, color: 'gray' as const };
+  const conn = getConnectionDisplay(device.connection_status);
+  const stage = getTestStageDisplay(device.test_stage);
   const isReserved = device.reservation_status === DeviceReservationStatus.RESERVED;
 
   const togglerDisabled = !canTogglePower || isPowerToggling;
@@ -73,7 +74,7 @@ const DeviceHeader = ({
         <button
           onClick={onReload}
           disabled={isReloading}
-          className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed"
+          className={SOFT_BRAND_BUTTON}
         >
           {isReloading ? 'Перезагрузка...' : 'Перезагрузить'}
         </button>
@@ -83,7 +84,7 @@ const DeviceHeader = ({
             onClick={onPowerOn}
             disabled={togglerDisabled}
             title={togglerTitle}
-            className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={SOFT_SUCCESS_BUTTON}
           >
             {isPowerToggling ? 'Включение...' : 'Включить'}
           </button>
@@ -92,7 +93,7 @@ const DeviceHeader = ({
             onClick={onPowerOff}
             disabled={togglerDisabled}
             title={togglerTitle}
-            className="bg-[#DC2626] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={SOFT_DANGER_BUTTON}
           >
             {isPowerToggling ? 'Отключение...' : 'Отключить'}
           </button>

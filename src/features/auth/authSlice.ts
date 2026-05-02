@@ -1,10 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { AuthState, UserSchema } from './types';
+import type { AuthState } from './types';
 
 const initialState: AuthState = {
-  user: null,
   token: null,
-  isAuthenticated: false,
+  username: null,
 };
 
 const authSlice = createSlice({
@@ -13,16 +12,14 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: UserSchema; token: string }>
+      action: PayloadAction<{ token: string; username: string }>,
     ) => {
-      state.user = action.payload.user;
       state.token = action.payload.token;
-      state.isAuthenticated = true;
+      state.username = action.payload.username;
     },
     clearCredentials: (state) => {
-      state.user = null;
       state.token = null;
-      state.isAuthenticated = false;
+      state.username = null;
     },
   },
 });

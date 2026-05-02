@@ -1,4 +1,4 @@
-import { UserRole } from '../../types/enums';
+export type UserRole = 'admin' | 'user' | 'ci';
 
 export interface UserSchema {
   username: string;
@@ -31,7 +31,6 @@ export interface LogoutResponse {
 }
 
 export interface AuthState {
-  user: UserSchema | null;
   token: string | null;
-  isAuthenticated: boolean;
+  username: string | null;
 }

@@ -6,6 +6,7 @@ import type { DeviceSchema } from '../../devices/types';
 import type { BolidPinSchema } from '../types';
 import BolidSearchBar from '../components/BolidSearchBar';
 import BolidCard from '../components/BolidCard';
+import AppHeader from '../../../components/layout/AppHeader';
 
 const buildPinIdToHostnameMap = (devices: DeviceSchema[]): Map<string, string> => {
   const map = new Map<string, string>();
@@ -46,17 +47,21 @@ const BolidPage = () => {
 
   return (
     <div style={{ padding: '36px 120px', margin: '0 auto' }}>
-      <div className="flex items-center gap-4 mb-6">
-        <button
-          type="button"
-          onClick={() => navigate('/')}
-          className="bg-transparent border-none text-[24px] cursor-pointer text-[#1F2937] hover:text-[#2626E0] transition-colors"
-          aria-label="Назад к устройствам"
-        >
-          ←
-        </button>
-        <h2 className="text-[22px] font-extrabold">Контроллеры</h2>
-      </div>
+      <AppHeader
+        title={
+          <span className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="bg-transparent border-none text-[24px] cursor-pointer text-[#1F2937] hover:text-[#2626E0] transition-colors"
+              aria-label="Назад к устройствам"
+            >
+              ←
+            </button>
+            Контроллеры
+          </span>
+        }
+      />
 
       <BolidSearchBar value={search} onChange={setSearch} />
 

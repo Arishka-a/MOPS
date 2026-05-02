@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react';
-import { useRunSSHCommandMutation } from '../api';
+import {
+  useRunSSHCommandMutation,
+  useRunSSHCommandSyncMutation,
+} from '../api';
 import type { SSHTaskResult } from '../types';
 import { applyStatusToEntry, makeEntryId } from './sshTaskStatus';
 import { errMessage } from '../utils/errMessage';
@@ -13,6 +16,8 @@ export type SSHEntryStatus =
   | 'cancelled'
   | 'error';
 
+export type SSHMode = 'queue' | 'sync';
+
 export interface SSHHistoryEntry {
   id: string;
   taskId: string | null;
@@ -20,6 +25,7 @@ export interface SSHHistoryEntry {
   status: SSHEntryStatus;
   result: SSHTaskResult | null;
   error: string | null;
+  mode: SSHMode;
 }
 
 export interface SSHCommandParams {
@@ -31,6 +37,7 @@ export interface SSHCommandParams {
 
 export const useSSHQueue = (hostname: string) => {
   const [runSSHCommand] = useRunSSHCommandMutation();
+  const [runSSHCommandSync] = useRunSSHCommandSyncMutation();
 
   const [history, setHistory] = useState<SSHHistoryEntry[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -50,7 +57,9 @@ export const useSSHQueue = (hostname: string) => {
 
   const activeEntry = activeId ? history.find((e) => e.id === activeId) ?? null : null;
   const activeTaskId =
-    activeEntry && (activeEntry.status === 'pending' || activeEntry.status === 'running')
+    activeEntry &&
+    activeEntry.mode === 'queue' &&
+    (activeEntry.status === 'pending' || activeEntry.status === 'running')
       ? activeEntry.taskId
       : null;
 
@@ -70,7 +79,7 @@ export const useSSHQueue = (hostname: string) => {
   });
 
   const execute = useCallback(
-    async (command: string, params: SSHCommandParams) => {
+    async (command: string, params: SSHCommandParams, mode: SSHMode) => {
       const trimmed = command.trim();
       if (!trimmed || activeId) return;
 
@@ -81,38 +90,54 @@ export const useSSHQueue = (hostname: string) => {
           id: entryId,
           taskId: null,
           command: trimmed,
-          status: 'pending',
+          status: mode === 'sync' ? 'running' : 'pending',
           result: null,
           error: null,
+          mode,
         },
       ]);
       setActiveId(entryId);
 
-      try {
-        const raw = await runSSHCommand({
-          hostname,
-          cmd: trimmed,
-          username: 'root',
-          retries: params.retries,
-          retry_delay: params.retry_delay,
-          cmd_timeout: params.cmd_timeout,
-          port: params.port,
-        }).unwrap();
-        const response = raw as { task_id?: string; id?: string };
-        const id = response.task_id ?? response.id;
+      const requestPayload = {
+        hostname,
+        cmd: trimmed,
+        username: 'root' as const,
+        retries: params.retries,
+        retry_delay: params.retry_delay,
+        cmd_timeout: params.cmd_timeout,
+        port: params.port,
+      };
 
-        if (!id) {
-          updateEntry(entryId, { status: 'error', error: 'Сервер не вернул task_id' });
+      try {
+        if (mode === 'sync') {
+          const result = await runSSHCommandSync(requestPayload).unwrap();
+          const isSuccess = result.retcode === 0;
+          updateEntry(entryId, {
+            status: isSuccess ? 'completed' : 'failed',
+            result,
+          });
           setActiveId(null);
-          return;
+        } else {
+          const raw = await runSSHCommand(requestPayload).unwrap();
+          const response = raw as { task_id?: string; id?: string };
+          const id = response.task_id ?? response.id;
+
+          if (!id) {
+            updateEntry(entryId, {
+              status: 'error',
+              error: 'Сервер не вернул task_id',
+            });
+            setActiveId(null);
+            return;
+          }
+          updateEntry(entryId, { taskId: id, status: 'running' });
         }
-        updateEntry(entryId, { taskId: id, status: 'running' });
       } catch (e) {
         updateEntry(entryId, { status: 'error', error: errMessage(e) });
         setActiveId(null);
       }
     },
-    [hostname, activeId, runSSHCommand, updateEntry],
+    [hostname, activeId, runSSHCommand, runSSHCommandSync, updateEntry],
   );
 
   const clear = useCallback(() => {

@@ -1,24 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import type { DeviceSchema } from '../types';
-import { DeviceConnectionStatus, DeviceTestStage, DeviceReservationStatus } from '../../../types/enums';
+import { DeviceReservationStatus } from '../../../types/enums';
 import StatusBadge from './common/StatusBadge';
+import { getConnectionDisplay, getTestStageDisplay } from '../utils/deviceStatus';
 
 interface Props {
   devices: DeviceSchema[];
 }
-
-const connMap: Record<string, { text: string; color: 'green' | 'red' }> = {
-  [DeviceConnectionStatus.AVAILABLE]: { text: 'Онлайн', color: 'green' },
-  [DeviceConnectionStatus.UNAVAILABLE]: { text: 'Офлайн', color: 'red' },
-};
-
-const stageMap: Record<string, { text: string; color: 'green' | 'red' | 'orange' | 'blue' | 'gray' }> = {
-  [DeviceTestStage.NONE]: { text: 'Свободно', color: 'gray' },
-  [DeviceTestStage.INSTALLING_IMAGE]: { text: 'Прошивка', color: 'orange' },
-  [DeviceTestStage.MANUAL_TEST]: { text: 'Ручной тест', color: 'orange' },
-  [DeviceTestStage.AUTO_TEST]: { text: 'Авто тест', color: 'orange' },
-  [DeviceTestStage.RELOADING]: { text: 'Перезагрузка', color: 'orange' },
-};
 
 const ReservationBadge = ({ device }: { device: DeviceSchema }) => {
   const isReserved = device.reservation_status === DeviceReservationStatus.RESERVED;
@@ -51,8 +39,8 @@ const DevicesTableBody = ({ devices }: Props) => {
   return (
     <tbody>
       {devices.map((d, idx) => {
-        const conn = connMap[d.connection_status] ?? { text: d.connection_status, color: 'gray' as const };
-        const stage = stageMap[d.test_stage] ?? { text: d.test_stage, color: 'gray' as const };
+        const conn = getConnectionDisplay(d.connection_status);
+        const stage = getTestStageDisplay(d.test_stage);
 
         return (
           <tr key={d.hostname + idx} className="border-b border-[#D1D5DB]/30">
