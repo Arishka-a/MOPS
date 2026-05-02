@@ -22,7 +22,7 @@ const SSHCommandForm = ({
   canExecute,
 }: Props) => {
   return (
-    <div className="rounded-[20px] border-[2px] border-[#2626E0] bg-white p-7 w-[260px] flex-shrink-0">
+    <div className="rounded-lg border-[2px] border-brand bg-white p-7 w-[260px] flex-shrink-0">
       <h3 className="text-[16px] font-bold text-center mb-5">Параметры запуска</h3>
 
       <SSHModeSelector mode={mode} onChange={onModeChange} />
@@ -34,7 +34,7 @@ const SSHCommandForm = ({
           type="button"
           onClick={onExecute}
           disabled={!canExecute || isExecuting}
-          className="bg-[#2626E0] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#1e1ebf] disabled:opacity-50 self-start"
+          className="bg-brand text-white border-none rounded-md px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-brand-hover disabled:opacity-50 self-start"
         >
           {isExecuting ? 'Выполняется...' : 'Выполнить'}
         </button>

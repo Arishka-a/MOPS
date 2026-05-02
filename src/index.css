@@ -1,6 +1,27 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
+@theme {
+  --color-brand: #2626E0;
+  --color-brand-hover: #1e1ebf;
+  --color-brand-tint: #EAEBFF;     /* светлая заливка hover у outline-кнопок */
+
+  --color-success: #16A34A;
+  --color-success-hover: #15803d;
+  --color-success-tint: #DCFCE7;   /* мягкие кнопки «Перезагрузить» / «Включить» */
+  --color-danger: #DC2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-tint: #FEE2E2;    /* мягкие кнопки «Снять» / «Удалить» / «Отключить» */
+
+  --color-border: #D1D5DB;          /* основная граница карточек/инпутов */
+  --color-muted: #6B7280;           /* серый текст: лейблы, плейсхолдеры */
+  --color-surface: #F3F4F6;         /* фон неактивных элементов / шапка таблицы */
+
+  --radius-sm: 10px;                /* инпуты, мелкие кнопки, чипы */
+  --radius-md: 14px;                /* основные кнопки */
+  --radius-lg: 20px;                /* карточки */
+}
+
 body {
   font-family: "Nunito", sans-serif;
   background: #F8F9FB;

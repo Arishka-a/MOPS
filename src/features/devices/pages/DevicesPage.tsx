@@ -28,14 +28,14 @@ const DevicesPage = () => {
             <button
               type="button"
               onClick={() => navigate('/images')}
-              className="border border-[#2626E0] bg-transparent text-[#2626E0] rounded-[14px] px-5 py-3 text-[15px] font-bold cursor-pointer hover:bg-[#EAEBFF] transition-colors"
+              className="border border-brand bg-transparent text-brand rounded-md px-5 py-3 text-[15px] font-bold cursor-pointer hover:bg-brand-tint transition-colors"
             >
               Образы
             </button>
             <button
               type="button"
               onClick={() => navigate('/controllers')}
-              className="bg-[#2626E0] text-white border-none rounded-[14px] px-7 py-3 text-[15px] font-bold cursor-pointer hover:bg-[#1e1ebf]"
+              className="bg-brand text-white border-none rounded-md px-7 py-3 text-[15px] font-bold cursor-pointer hover:bg-brand-hover"
             >
               Контроллеры
             </button>

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import AppHeader from '../../../components/layout/AppHeader';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import ImagesTable from '../components/images/ImagesTable';
-import CleanupStatsBanner from '../components/images/CleanupStatsBanner';
+import ImagesTable from '../components/firmware/ImagesTable';
+import CleanupStatsBanner from '../components/firmware/CleanupStatsBanner';
 import { useImagesPage } from '../hooks/useImagesPage';
 
 const ImagesPage = () => {

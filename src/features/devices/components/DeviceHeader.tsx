@@ -15,6 +15,19 @@ interface Props {
   isPoweredOff?: boolean;
 }
 
+const SOFT_BUTTON_BASE =
+  'border-none rounded-md px-6 py-[10px] text-[14px] font-bold cursor-pointer ' +
+  'disabled:opacity-50 disabled:cursor-not-allowed';
+
+const SOFT_BRAND_BUTTON =
+  `${SOFT_BUTTON_BASE} bg-brand-tint text-brand hover:bg-indigo-200`;
+
+const SOFT_SUCCESS_BUTTON =
+  `${SOFT_BUTTON_BASE} bg-success-tint text-success hover:bg-green-200`;
+
+const SOFT_DANGER_BUTTON =
+  `${SOFT_BUTTON_BASE} bg-danger-tint text-danger hover:bg-red-200`;
+
 const DeviceHeader = ({
   device,
   onReload,
@@ -61,7 +74,7 @@ const DeviceHeader = ({
         <button
           onClick={onReload}
           disabled={isReloading}
-          className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed"
+          className={SOFT_BRAND_BUTTON}
         >
           {isReloading ? 'Перезагрузка...' : 'Перезагрузить'}
         </button>
@@ -71,7 +84,7 @@ const DeviceHeader = ({
             onClick={onPowerOn}
             disabled={togglerDisabled}
             title={togglerTitle}
-            className="bg-[#16A34A] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={SOFT_SUCCESS_BUTTON}
           >
             {isPowerToggling ? 'Включение...' : 'Включить'}
           </button>
@@ -80,7 +93,7 @@ const DeviceHeader = ({
             onClick={onPowerOff}
             disabled={togglerDisabled}
             title={togglerTitle}
-            className="bg-[#DC2626] text-white border-none rounded-[14px] px-6 py-[10px] text-[14px] font-bold cursor-pointer hover:bg-[#b91c1c] disabled:opacity-50 disabled:cursor-not-allowed"
+            className={SOFT_DANGER_BUTTON}
           >
             {isPowerToggling ? 'Отключение...' : 'Отключить'}
           </button>
