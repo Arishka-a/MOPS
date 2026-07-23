@@ -1,73 +1,134 @@
-# React + TypeScript + Vite
+# MOPS — система управления сетевым оборудованием
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Внутренняя система для управления сетевым оборудованием и стендами автоматизированного тестирования: инвентаризация устройств, бронирование, прошивка, работа по SSH и управление образами.
 
-Currently, two official plugins are available:
+Frontend-часть проекта. Разработана во время практики в компании «Форт-Телеком» (апрель — май 2026).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> **Примечание.** Репозиторий содержит только клиентскую часть. Backend закрытый, поэтому для полноценной работы приложения нужен доступ к внутреннему API компании.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Стек
 
-## Expanding the ESLint configuration
+| Категория | Технологии |
+| --- | --- |
+| Ядро | React 19, TypeScript (strict), Vite |
+| Управление состоянием | Redux Toolkit, RTK Query, redux-persist |
+| Роутинг | React Router 7 |
+| Стили | Tailwind CSS 4 |
+| Качество кода | ESLint 9, typescript-eslint |
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Возможности
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Аутентификация** — вход по JWT, сохранение токена между сессиями, автоматический выход по истечении срока действия.
+- **Устройства** — список с фильтрацией и детальная страница с вкладками: информация, прошивка, файлы, SSH.
+- **Бронирование** — резервирование устройств с оптимистичным обновлением интерфейса.
+- **Прошивка** — пошаговый процесс с отслеживанием статуса и восстановлением состояния после перезагрузки страницы.
+- **SSH-консоль** — выполнение команд в синхронном и асинхронном режимах, очередь команд, отмена задач.
+- **Образы** — загрузка файлов прошивок через drag-and-drop.
+- **Стенды** — управление стендами автоматизированного тестирования.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## Структура проекта
+
+```
+src/
+├── app/                 # store, провайдеры, глобальная конфигурация
+├── assets/              # статические ресурсы
+├── components/layout/   # компоненты общей разметки
+├── features/            # бизнес-логика по доменам
+│   ├── auth/            # вход, guard'ы, работа с токеном
+│   ├── devices/         # устройства, бронирование, прошивка, SSH
+│   ├── images/          # образы прошивок
+│   └── bolid/           # стенды автоматизированного тестирования
+├── hooks/               # переиспользуемые хуки
+├── router/              # конфигурация маршрутов
+├── types/               # общие TypeScript-типы
+├── utils/               # вспомогательные функции
+├── App.tsx
+└── main.tsx
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Логика разделена по доменам, а не по типам файлов: каждая фича в `features/` самодостаточна и содержит свои компоненты, хуки, типы и работу с API. В `hooks/`, `types/` и `utils/` вынесено только то, что переиспользуется между доменами.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Архитектурные решения
+
+### Кэширование через RTK Query
+
+Весь серверный стейт живёт в RTK Query. Инвалидация настроена по тегам (`Devices`, `Reservations`, `Images`): после мутации перезапрашиваются только затронутые данные, а не весь список.
+
+### Оптимистичные обновления
+
+Бронирование устройства применяется в интерфейсе мгновенно, до ответа сервера. При ошибке изменение автоматически откатывается.
+
+### Конечный автомат прошивки
+
+Процесс прошивки описан как state machine:
+
 ```
+idle → install → reload 1 → reload 2 → done
+                    ↓
+                  error
+```
+
+Текущее состояние сохраняется, поэтому перезагрузка страницы во время долгой операции не ломает процесс — пользователь возвращается на тот же шаг.
+
+### Polling длительных задач
+
+Долгие операции на бэкенде (Celery) отслеживаются кастомными хуками `useInstallPolling` и `useSSHTaskPolling`: они опрашивают статус с заданным интервалом и останавливаются при завершении, ошибке или размонтировании компонента.
+
+### Очередь SSH-команд
+
+Хук `useSSHQueue` выстраивает команды в очередь, не даёт отправить следующую до завершения текущей и позволяет отменить выполнение.
+
+### Строгая типизация
+
+TypeScript в режиме `strict`. Типы ответов API описаны явно и переиспользуются между слоями, что исключает рассинхронизацию контрактов.
+
+---
+
+## Запуск
+
+**Требования:** Node.js 22.12+, npm 10.9+
+
+```bash
+git clone https://github.com/Arishka-a/MOPS.git
+cd MOPS
+npm install
+```
+
+Создайте файл `.env` в корне проекта и укажите в нём адрес backend-API (имя переменной — см. конфигурацию RTK Query).
+
+Запуск в режиме разработки:
+
+```bash
+npm run dev
+```
+
+Приложение будет доступно на http://localhost:5173
+
+### Доступные команды
+
+| Команда | Описание |
+| --- | --- |
+| `npm run dev` | Запуск дев-сервера |
+| `npm run build` | Сборка проекта в `dist/` |
+| `npm run preview` | Локальный просмотр собранной версии |
+| `npm run typecheck` | Проверка типов без сборки |
+| `npm run lint` | Проверка кода ESLint |
+| `npm run lint:fix` | Автоисправление ошибок линтера |
+
+---
+
+## Автор
+
+**Вахрушева Арина Вячеславовна** — Frontend-разработчик
+
+- GitHub: [@Arishka-a](https://github.com/Arishka-a)
+- Портфолио: [my-portfolio-one-sepia-45.vercel.app](https://my-portfolio-one-sepia-45.vercel.app/)
+- Telegram: [@arinaVah](https://t.me/arinaVah)
